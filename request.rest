@@ -1,0 +1,20 @@
+POST http://localhost:4100/transcript
+content-type:application/json
+
+{
+  "transcript": "こんにちは"
+}
+
+###
+POST http://localhost:4100/text-to-speech
+content-type:application/json
+
+{
+  "utterance": "こんにちは"
+}
+
+###
+POST http://localhost:4100/speech-to-text/start
+
+###
+POST http://localhost:4100/speech-to-text/stop

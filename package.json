@@ -2,15 +2,20 @@
   "name": "browser-speech",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "dependencies": {
     "@craco/craco": "^6.1.2",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
+    "@types/axios": "^0.14.0",
     "@types/jest": "^26.0.15",
     "@types/node": "^12.0.0",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
+    "@types/sockjs": "^0.3.32",
+    "@types/sockjs-client": "^1.5.0",
+    "axios": "^0.21.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
@@ -18,8 +23,11 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "craco start",
-    "build": "craco build",
+    "start": "nodemon --config nodemon.json & craco start",
+    "front": "craco start",
+    "backend": "nodemon --config nodemon.json",
+    "server": "node backend/index.js",
+    "build": "BUILD_PATH=./front craco build",
     "test": "craco test",
     "eject": "react-scripts eject"
   },
@@ -43,7 +51,10 @@
   },
   "devDependencies": {
     "autoprefixer": "^9",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.7",
     "postcss": "^7",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat"
-  }
+  },
+  "proxy": "http://localhost:4100"
 }

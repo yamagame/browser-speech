@@ -15,3 +15,12 @@ $ npm install
 ```
 $ npm start
 ```
+
+## docker compose
+
+```
+# ビルド
+$ RECEIVER_URL=http://[音声認識文字列を受けるサーバー]/transcript docker-compose build
+# 実行
+$ docker-compose up
+```

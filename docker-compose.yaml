@@ -1,0 +1,16 @@
+version: "3"
+services:
+  browser-speech:
+    build:
+      context: .
+      args:
+        - "RECEIVER_URL=${RECEIVER_URL}"
+        - "PORT=4100"
+    entrypoint:
+      - node
+      - backend/index.js
+    tty: true
+    volumes:
+      - "${PWD}:/app"
+    ports:
+      - "4100:4100"
