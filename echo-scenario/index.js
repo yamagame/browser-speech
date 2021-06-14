@@ -23,8 +23,17 @@ app.post("/init", async (req, res) => {
   res.sendStatus(200);
 });
 
+app.post("/recognition", async (req, res) => {
+  console.log(req.body);
+  res.sendStatus(200);
+});
+
 app.post("/ready", async (req, res) => {
   console.log(req.body);
+  const username = req.body.username;
+  await axios.post(`${backendHost}/speech-to-text/start`, {
+    username,
+  });
   res.sendStatus(200);
 });
 

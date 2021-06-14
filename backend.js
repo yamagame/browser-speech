@@ -99,6 +99,13 @@ app.post("/init", (req, res) => {
   res.sendStatus(200);
 });
 
+app.post("/recognition", (req, res) => {
+  const { username } = req.session;
+  if (scenarioManagerHost)
+    axios.post(`${scenarioManagerHost}/recognition`, { ...req.body, username });
+  res.sendStatus(200);
+});
+
 app.post("/ready", (req, res) => {
   const { username } = req.session;
   if (scenarioManagerHost)
