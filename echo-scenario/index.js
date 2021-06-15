@@ -13,6 +13,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// シナリオスタート
 app.post("/init", async (req, res) => {
   console.log(req.body);
   const username = req.body.username;
@@ -23,11 +24,13 @@ app.post("/init", async (req, res) => {
   res.sendStatus(200);
 });
 
+// 音声認識ステータス通知
 app.post("/recognition", async (req, res) => {
   console.log(req.body);
   res.sendStatus(200);
 });
 
+// シナリオ継続通知
 app.post("/ready", async (req, res) => {
   console.log(req.body);
   const username = req.body.username;
@@ -37,6 +40,7 @@ app.post("/ready", async (req, res) => {
   res.sendStatus(200);
 });
 
+// 音声認識結果
 app.post("/transcript", async (req, res) => {
   const username = req.body.username;
   await axios.post(`${backendHost}/text-to-speech`, {
