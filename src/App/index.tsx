@@ -1,3 +1,4 @@
+import "./index.css";
 import React from "react";
 import axios from "axios";
 import {
@@ -8,6 +9,7 @@ import {
 } from "./usecase";
 import { Route } from "react-router-dom";
 import { Login } from "pages/Login";
+import { ControlPanel } from "components/ControlPanel";
 import { Presentation } from "pages/Presentation";
 import { useHistory } from "react-router-dom";
 
@@ -44,33 +46,35 @@ function App() {
   }
 
   return (
-    <div className="container">
-      <Route path="/login">
-        <Login username={username} onChangeUsername={onChangeUsername} />
-      </Route>
-      <Route exact path="/">
-        <Presentation
-          start={startPresentation}
-          startRecognition={startRecognition}
-          result={result}
-          onStartPresentation={async () => {
-            setResult("");
-            if (!startPresentation) speechSynthesis("");
-            setStartPresentation(true);
-            await axios.post("/init");
-          }}
-          onStopPresentation={() => {
-            setResult("");
-            setStartPresentation(false);
-          }}
-          onStartRecognition={() => {
-            setStartRecognition(true);
-          }}
-          onStopRecognition={() => {
-            setStartRecognition(false);
-          }}
-        />
-      </Route>
+    <div className="container mx-auto">
+      <ControlPanel>
+        <Route path="/login">
+          <Login username={username} onChangeUsername={onChangeUsername} />
+        </Route>
+        <Route exact path="/">
+          <Presentation
+            start={startPresentation}
+            startRecognition={startRecognition}
+            result={result}
+            onStartPresentation={async () => {
+              setResult("");
+              if (!startPresentation) speechSynthesis("");
+              setStartPresentation(true);
+              await axios.post("/init");
+            }}
+            onStopPresentation={() => {
+              setResult("");
+              setStartPresentation(false);
+            }}
+            onStartRecognition={() => {
+              setStartRecognition(true);
+            }}
+            onStopRecognition={() => {
+              setStartRecognition(false);
+            }}
+          />
+        </Route>
+      </ControlPanel>
     </div>
   );
 }

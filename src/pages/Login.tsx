@@ -23,6 +23,7 @@ export const Login: React.FC<LoginProps> = ({ username, onChangeUsername }) => {
   return (
     <>
       <Input
+        className="m-8"
         value={username}
         placeholder="ユーザー名"
         onChange={onChangeUsername}

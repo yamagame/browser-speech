@@ -28,13 +28,15 @@ export const Presentation: React.FC<PresentationProps> = ({
     <>
       {!start ? (
         <Button
-          label={"Start"}
+          className="m-8"
+          label={"Start Scenario"}
           onClick={() => {
             onStartPresentation();
           }}
         ></Button>
       ) : (
         <Button
+          className="m-8"
           label={startRecognition ? "Stop Recognition" : "Start Recognition"}
           onClick={() => {
             if (startRecognition) {
@@ -45,15 +47,18 @@ export const Presentation: React.FC<PresentationProps> = ({
           }}
         ></Button>
       )}
-      <Button
-        label={"ログアウト"}
-        onClick={() => {
-          onStopPresentation();
-          axios.post("/logout");
-          history.push("/login");
-        }}
-      ></Button>
-      <div>{result}</div>
+      {result ? (
+        <div>{result}</div>
+      ) : (
+        <Button
+          label={"ログアウト"}
+          onClick={() => {
+            onStopPresentation();
+            axios.post("/logout");
+            history.push("/login");
+          }}
+        ></Button>
+      )}
     </>
   );
 };
