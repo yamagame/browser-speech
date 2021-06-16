@@ -1,0 +1,16 @@
+###
+POST http://localhost:5200/recognition
+content-type:application/json
+
+{
+  "body": "Hello World"
+}
+
+###
+POST http://localhost:5200/transcript
+content-type:application/json
+
+{
+  "username": "me",
+  "transcript": "Hello World"
+}

@@ -1,0 +1,12 @@
+{
+  "extends": ["eslint:recommended"],
+  "plugins": ["node"],
+  "parserOptions": {},
+  "env": {
+    "node": true
+  },
+  "globals": {},
+  "rules": {
+    "node/no-unsupported-features": ["error", { "version": 14 }]
+  }
+}

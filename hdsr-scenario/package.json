@@ -1,0 +1,36 @@
+{
+  "name": "hdsr-scenario",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc -w -p tsconfig.json & NODE_PATH=./dist nodemon --config nodemon.json",
+    "build": "webpack",
+    "test": "NODE_PATH=dist jest"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@types/express": "^4.17.12",
+    "axios": "^0.21.1",
+    "express": "^4.17.1",
+    "sockjs": "^0.3.21"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.23",
+    "eslint-plugin-node": "^11.1.0",
+    "jest": "^27.0.4",
+    "nodemon": "^2.0.7",
+    "ts-jest": "^27.0.2",
+    "ts-loader": "^9.2.2",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.2",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.0",
+    "webpack-node-externals": "^3.0.0"
+  }
+}
