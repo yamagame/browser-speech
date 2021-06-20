@@ -2,23 +2,20 @@
 
 Chrome ブラウザで音声認識を行うサンプルです。
 
-## 準備
+## 開発サーバの準備と実行
 
 node_modules をダウンロードします。
 
 ```
 $ npm install
+$ npm start
 ```
 
-## エコーシナリオサーバ実行
+## エコーシナリオサーバの準備と実行
 
 ```
-$ npm run echo-server
-```
-
-## 開発サーバ実行
-
-```
+$ cd echo-scenario
+$ npm install
 $ npm start
 ```
 

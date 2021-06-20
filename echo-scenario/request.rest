@@ -1,0 +1,7 @@
+###
+POST http://localhost:5200/init
+content-type:application/json
+
+{
+  "username": "me"
+}

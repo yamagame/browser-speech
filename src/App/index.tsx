@@ -6,6 +6,7 @@ import {
   processControl,
   processRecognition,
   speechSynthesis,
+  stopRecognition,
 } from "./usecase";
 import { Route } from "react-router-dom";
 import { Login } from "pages/Login";
@@ -65,6 +66,7 @@ function App() {
             onStopPresentation={() => {
               setResult("");
               setStartPresentation(false);
+              stopRecognition();
             }}
             onStartRecognition={() => {
               setStartRecognition(true);

@@ -124,3 +124,9 @@ export const processRecognition = async ({
     }
   }
 };
+
+export const stopRecognition = () => {
+  if (speechRecognition !== undefined) {
+    speechRecognition.stop();
+  }
+};
