@@ -55,36 +55,93 @@ export class DoraEngine {
     const dora = new Dora();
     this.robots[username] = { dora, socket, next: () => {} };
     const startScenario = "start.txt";
+    const defaults = {};
 
-    const scenario = fs.readFileSync(scenarioPath(startScenario), "utf8");
-    await dora.parse(scenario, startScenario, (filename, callback) => {
-      fs.readFile(scenarioPath(filename), (err, data) => {
-        if (err) {
-          console.error(err);
-          return;
+    let run_scenario = true;
+
+    const play = async ({ startScenario, range, username }, defaults) => {
+      function emitError(err) {
+        err.info = dora.errorInfo();
+        if (!err.info.reason) {
+          err.info.reason = err.toString();
         }
-        callback(data.toString());
-      });
-    });
-    dora.play(
+        console.log(err.info);
+        run_scenario = false;
+      }
+      try {
+        const scenario = fs.readFileSync(scenarioPath(startScenario), "utf8");
+        await dora.parse(scenario, startScenario, (filename, callback) => {
+          fs.readFile(scenarioPath(filename), (err, data) => {
+            if (err) {
+              emitError(err);
+              return;
+            }
+            callback(data.toString());
+          });
+        });
+        dora.play(
+          {
+            username,
+          },
+          {
+            socket,
+            range,
+            defaults,
+          },
+          async (err, msg) => {
+            if (err) {
+              emitError(err);
+              if (err.info) {
+                if (err.info.lineNumber >= 1) {
+                  console.log(
+                    `${err.info.lineNumber}行目でエラーが発生しました。\n\n${err.info.code}\n\n${err.info.reason}`
+                  );
+                } else {
+                  console.log(
+                    `エラーが発生しました。\n\n${err.info.code}\n\n${err.info.reason}`
+                  );
+                }
+              } else {
+                console.log(`エラーが発生しました。\n\n`);
+              }
+              run_scenario = false;
+              return;
+            }
+            if (typeof msg._nextscript !== "undefined") {
+              console.log(`msg._nextscript ${msg._nextscript}`);
+              if (run_scenario) {
+                play(
+                  {
+                    startScenario: msg._nextscript,
+                    range: { start: 0 },
+                    username,
+                  },
+                  defaults
+                );
+              }
+            } else if (backendHost) {
+              await axios.post(`${backendHost}/exit`, { username, ...msg });
+            }
+          }
+        );
+      } catch (err) {
+        emitError(err);
+      }
+    };
+
+    dora.request = async (command, options, params) => {
+      console.log(command);
+    };
+
+    await play(
       {
-        username,
-      },
-      {
-        socket,
+        startScenario,
         range: {
           start: 0,
         },
+        username,
       },
-      async (err, msg) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        if (backendHost) {
-          await axios.post(`${backendHost}/exit`, { username, ...msg });
-        }
-      }
+      defaults
     );
   }
 

@@ -1,6 +1,1 @@
-ようこそ
-ご用件をどうぞ
-:loop
-/speech-to-text
-/text-to-speech
-/goto/:loop
+/run/welcome.txt

@@ -1044,21 +1044,32 @@ export const Core = function (DORA, config = {}) {
    *
    *
    */
-  function QuizSelectLayout(node, options) {
+  function Run(node, options) {
     var isTemplated = (options || "").indexOf("{{") != -1;
-    node.on("input", function (msg) {
-      if (typeof msg.quiz === "undefined") msg.quiz = utils.quizObject();
-      let layout = options;
+    node.on("input", async function (msg) {
+      if (!node.isAlive()) return;
+      let nextscript = options || msg.payload;
       if (isTemplated) {
-        layout = utils.mustache.render(layout, msg);
+        nextscript = utils.mustache.render(nextscript, msg);
       }
-      if (msg.quiz.pages.length > 0) {
-        msg.quiz.pages[msg.quiz.pages.length - 1].layout = layout;
+      nextscript = nextscript.trim();
+      //console.log(`nextscript ${nextscript}`);
+      if (nextscript.indexOf("http") == 0) {
+        const res = await node.flow.request({
+          type: "scenario",
+          action: "load",
+          uri: nextscript,
+          username: msg.username,
+        });
+        //console.log(`res ${JSON.stringify(res)}`);
+        msg._nextscript = res.next_script;
+      } else {
+        msg._nextscript = nextscript;
       }
-      node.send(msg);
+      node.end(null, msg);
     });
   }
-  DORA.registerType("select.layout", QuizSelectLayout);
+  DORA.registerType("run", Run);
 
   /*
    * 値を変換する

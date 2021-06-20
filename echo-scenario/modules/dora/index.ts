@@ -15,6 +15,7 @@ export type DoraPlayProps = {
     start: number;
     end?: number;
   };
+  defaults: any;
 };
 
 export { Node };
