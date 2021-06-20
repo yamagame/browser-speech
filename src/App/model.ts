@@ -11,7 +11,12 @@ interface ControlMessageSpeechToTextStop {
   action: "speech-to-text/stop";
 }
 
+interface ControlMessageExit {
+  action: "exit";
+}
+
 export type ControlMessage =
   | ControlMessageTextToSpeech
   | ControlMessageSpeechToTextStart
-  | ControlMessageSpeechToTextStop;
+  | ControlMessageSpeechToTextStop
+  | ControlMessageExit;

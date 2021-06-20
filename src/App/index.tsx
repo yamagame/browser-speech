@@ -30,7 +30,11 @@ function App() {
   );
 
   // サーバーからのコントロールメッセージを処理
-  React.useEffect(() => processControl({ setResult, setStartRecognition }), []);
+  React.useEffect(
+    () =>
+      processControl({ setResult, setStartRecognition, setStartPresentation }),
+    []
+  );
 
   // 音声認識
   React.useEffect(() => {
@@ -60,7 +64,6 @@ function App() {
             onStartPresentation={async () => {
               setResult("");
               if (!startPresentation) speechSynthesis("");
-              setStartPresentation(true);
               await axios.post("/init");
             }}
             onStopPresentation={() => {

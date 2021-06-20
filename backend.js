@@ -74,16 +74,22 @@ app.post("/speech-to-text/stop", (req, res) => {
   res.sendStatus(200);
 });
 
+app.post("/text-to-speech", (req, res) => {
+  const { username } = req.body;
+  broadcast({ ...req.body, action: "text-to-speech", username });
+  res.sendStatus(200);
+});
+
+app.post("/exit", (req, res) => {
+  const { username } = req.session;
+  broadcast({ ...req.body, action: "exit", username });
+  res.sendStatus(200);
+});
+
 app.post("/transcript", isLogined, (req, res) => {
   const { username } = req.session;
   if (scenarioManagerHost)
     axios.post(`${scenarioManagerHost}/transcript`, { ...req.body, username });
-  res.sendStatus(200);
-});
-
-app.post("/text-to-speech", (req, res) => {
-  const { username } = req.body;
-  broadcast({ ...req.body, action: "text-to-speech", username });
   res.sendStatus(200);
 });
 

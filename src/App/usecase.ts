@@ -65,9 +65,11 @@ export const authCheck = ({
 export const processControl = ({
   setResult,
   setStartRecognition,
+  setStartPresentation,
 }: {
   setResult: (value: string) => void;
   setStartRecognition: (value: boolean) => void;
+  setStartPresentation: (value: boolean) => void;
 }) => {
   const sock = new SockJS("/controller");
   const onmessage = async (e: MessageEvent) => {
@@ -80,9 +82,16 @@ export const processControl = ({
         break;
       case "speech-to-text/start":
         setStartRecognition(true);
+        setStartPresentation(true);
         setResult("");
         break;
       case "speech-to-text/stop":
+        setStartRecognition(false);
+        setStartPresentation(true);
+        setResult("");
+        break;
+      case "exit":
+        setStartPresentation(false);
         setStartRecognition(false);
         setResult("");
         break;
