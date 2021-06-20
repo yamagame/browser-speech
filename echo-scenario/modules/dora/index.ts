@@ -2,7 +2,6 @@ import { EventEmitter } from "events";
 import { Flow } from "./libs/flow";
 import { Node } from "./libs/node";
 import { Core } from "./modules/core";
-import { Operation } from "./modules/operation";
 import { Http } from "./modules/http";
 
 import * as utils from "./libs/utils";
@@ -47,8 +46,6 @@ export class Dora {
     this.global = {};
     this._modname = "core";
     Core(this);
-    this._modname = "op";
-    Operation(this);
     this._modname = "http";
     Http(this);
     this.utils = utils;

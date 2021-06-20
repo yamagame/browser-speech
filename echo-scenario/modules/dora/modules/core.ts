@@ -1,38 +1,6 @@
 const utils = require("../libs/utils");
-const path = require("path");
-const mecab = require("../libs/mecab");
-const fetch = require("node-fetch");
-// const {
-//   QuizOK,
-//   QuizOKImage,
-//   QuizNG,
-//   QuizNGImage,
-//   QuizCategory,
-//   QuizSlide,
-// } = require("./quiz");
 
 export const Core = function (DORA, config = {}) {
-  /**
-   *
-   *
-   */
-  function QuizNow(node, options) {
-    node.on("input", async function (msg) {
-      if (typeof msg.quiz === "undefined") msg.quiz = utils.quizObject();
-      var now = new Date();
-      msg.now = {
-        year: now.getFullYear(),
-        month: now.getMonth() + 1,
-        date: now.getDate(),
-        hours: now.getHours(),
-        minutes: now.getMinutes(),
-        day: now.getDay(),
-      };
-      node.send(msg);
-    });
-  }
-  DORA.registerType("now", QuizNow);
-
   /*
    *
    *
@@ -291,67 +259,6 @@ export const Core = function (DORA, config = {}) {
    *
    *
    */
-  function CoreFork(node, options) {
-    node.nextLabel(options);
-    node.on("input", function (msg) {
-      var forkid = utils.generateId();
-      if (!node.global()._forks) {
-        node.global()._forks = {};
-      }
-      if (!node.global()._forks[forkid]) {
-        node.global()._forks[forkid] = {};
-      }
-      var forks = node.global()._forks[forkid];
-      var numOutputs = node.wires.length - 1;
-      if (!msg._forks) msg._forks = [];
-      msg._forks.push(forkid);
-      forks.numWire = numOutputs;
-      forks.priority = 0;
-      forks.name = "";
-      forks.msg = {};
-      node.fork(msg);
-    });
-  }
-  DORA.registerType("fork", CoreFork);
-
-  /*
-   *
-   *
-   */
-  function CorePush(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
-    node.on("input", function (msg) {
-      if (!msg.stack) msg.stack = [];
-      let message = options;
-      if (message === null) {
-        message = msg.payload;
-      }
-      if (isTemplated) {
-        message = utils.mustache.render(message, msg);
-      }
-      msg.stack.push(message);
-      node.send(msg);
-    });
-  }
-  DORA.registerType("push", CorePush);
-
-  /*
-   *
-   *
-   */
-  function CorePop(node, options) {
-    node.on("input", function (msg) {
-      if (!msg.stack) msg.stack = [];
-      msg.payload = msg.stack.pop();
-      node.send(msg);
-    });
-  }
-  DORA.registerType("pop", CorePop);
-
-  /*
-   *
-   *
-   */
   function CoreJoin(node, options) {
     node.nextLabel(options);
     node.on("input", function (msg) {
@@ -420,82 +327,31 @@ export const Core = function (DORA, config = {}) {
    *
    *
    */
-  function CoreJoinLoop(node, options) {
-    node.nextLabel(options);
-    node.on("input", function (msg) {
-      if (msg._forks && msg._forks.length > 0) {
-        node.jump(msg);
-      } else {
-        node.next(msg);
-      }
-    });
-  }
-  DORA.registerType("joinLoop", CoreJoinLoop);
-  DORA.registerType("join.loop", CoreJoinLoop);
-
-  /*
-   *
-   *
-   */
-  function CorePriority(node, options) {
-    node.on("input", function (msg) {
-      if (typeof msg.topicPriority === "undefined") {
-        msg.topicPriority = 0;
-      }
-      msg.topicPriority =
-        msg.topicPriority + (options === null ? 10 : parseInt(options));
-      node.send(msg);
-    });
-  }
-  DORA.registerType("priority", CorePriority);
-
-  /*
-   *
-   *
-   */
-  function CoreTopic(node, options) {
-    node.on("input", function (msg) {
-      msg.topic = options;
-      msg.topicPriority =
-        typeof msg.topicPriority !== "undefined" ? msg.topicPriority : 0;
-      node.send(msg);
-    });
-  }
-  DORA.registerType("topic", CoreTopic);
-
-  /*
-   *
-   *
-   */
-  function CoreOther(node, options) {
-    node.nextLabel(options);
-    node.on("input", function (msg) {
-      if (msg.topicPriority > 0) {
-        node.next(msg);
-      } else {
-        node.jump(msg);
-      }
-    });
-  }
-  DORA.registerType("other", CoreOther);
-
-  /*
-   *
-   *
-   */
   function Sound(type) {
     return function (node, options) {
       var isTemplated = (options || "").indexOf("{{") != -1;
       node.on("input", async function (msg) {
+        const { socket } = node.flow.options;
         let message = options;
         if (isTemplated) {
           message = DORA.utils.mustache.render(message, msg);
         }
-        await node.flow.request({
-          type,
-          sound: message,
-        });
-        node.send(msg);
+        socket.emit(
+          "sound",
+          {
+            msg,
+            params: {
+              type,
+              sound: message,
+              ...this.credential(),
+            },
+            node,
+          },
+          (res) => {
+            if (!node.isAlive()) return;
+            node.send(msg);
+          }
+        );
       });
     };
   }
@@ -593,7 +449,6 @@ export const Core = function (DORA, config = {}) {
       node.send(msg);
     });
   }
-  DORA.registerType("setString", CoreSetString);
   DORA.registerType("set.string", CoreSetString);
 
   /*
@@ -646,7 +501,6 @@ export const Core = function (DORA, config = {}) {
       node.send(msg);
     });
   }
-  DORA.registerType("setNumber", CoreSetNumber);
   DORA.registerType("set.number", CoreSetNumber);
 
   /*
@@ -818,26 +672,6 @@ export const Core = function (DORA, config = {}) {
   }
   DORA.registerType("text-to-speech", TextToSpeech);
 
-  /**
-   * 発話をキャンセルして、発話文をpayloadにテキストとして追加する
-   * silenceしたら、silence.endすること。
-   */
-  function Silence(type) {
-    return function (node, options) {
-      node.on("input", async function (msg) {
-        if (type === "start") {
-          msg.silence = true;
-          msg.payload = "";
-        } else {
-          delete msg.silence;
-        }
-        node.send(msg);
-      });
-    };
-  }
-  DORA.registerType("silence", Silence("start"));
-  DORA.registerType("silence.end", Silence("end"));
-
   /*
    *
    *
@@ -943,66 +777,6 @@ export const Core = function (DORA, config = {}) {
     });
   }
   DORA.registerType("speech-to-text", SpeechToText);
-
-  /*
-   *
-   *
-   */
-  function Translate(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
-    node.on("input", async function (msg) {
-      let opts = options;
-      if (isTemplated) {
-        opts = utils.mustache.render(opts, msg);
-      }
-      let host = "localhost";
-      let port = 3090;
-      if (typeof msg.dora !== "undefined") {
-        if (typeof msg.dora.host !== "undefined") {
-          host = msg.dora.host;
-        }
-        if (typeof msg.dora.port !== "undefined") {
-          port = msg.dora.port;
-        }
-      }
-      const body: {
-        text?;
-        source?;
-        target?;
-      } = {
-        text: msg.payload,
-      };
-      if (opts) {
-        opts = opts.split("/");
-        if (opts.length > 0) {
-          body.source = "ja";
-          body.target = opts[0];
-          if (opts.length > 1) {
-            body.source = opts[0];
-            body.target = opts[1];
-          }
-        }
-      }
-      const headers = {};
-      headers["Content-Type"] = "application/json";
-      let response = await fetch(`http://${host}:${port}/google/translate`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body),
-      });
-      if (response.ok) {
-        const data = await response.json();
-        const translation = data.join("");
-        msg.translate = {
-          translation,
-          ...body,
-        };
-        msg.payload = translation;
-      }
-      node.send(msg);
-    });
-  }
-  DORA.registerType("translate", Translate);
 
   /*
    *
@@ -1147,83 +921,6 @@ export const Core = function (DORA, config = {}) {
    *
    *
    */
-  function CoreChat(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
-    node.on("input", function (msg) {
-      const { socket } = node.flow.options;
-      var message = options || msg.payload;
-      if (isTemplated) {
-        message = utils.mustache.render(message, msg);
-      }
-      socket.emit(
-        "docomo-chat",
-        {
-          msg,
-          params: {
-            message,
-            silence: true,
-            ...this.credential(),
-          },
-          node,
-        },
-        (res) => {
-          if (!node.isAlive()) return;
-          msg.payload = res;
-          node.next(msg);
-        }
-      );
-    });
-  }
-  DORA.registerType("chat", CoreChat);
-  DORA.registerType("docomo-chat", CoreChat);
-
-  /*
-   *
-   *
-   */
-  function CoreDoraChat(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
-    node.on("input", function (msg) {
-      const { socket } = node.flow.options;
-      var action = options;
-      if (isTemplated) {
-        action = utils.mustache.render(action, msg);
-      }
-      var message = msg.payload;
-      const params = {
-        sheetId: utils.getParam(msg.chat, "sheetId", ""),
-        sheetName: utils.getParam(msg.chat, "sheetName", ""),
-        download: utils.getParam(msg.chat, "download", "auto"),
-        useMecab: utils.getParam(msg.chat, "useMecab", "true"),
-        action,
-      };
-      socket.emit(
-        "dora-chat",
-        {
-          msg,
-          params: {
-            message,
-            ...params,
-            ...this.credential(),
-          },
-          node,
-        },
-        (res) => {
-          if (!node.isAlive()) return;
-          msg.payload = res.answer;
-          if (!msg.chat) msg.chat = {};
-          msg.chat.result = res;
-          node.next(msg);
-        }
-      );
-    });
-  }
-  DORA.registerType("dora-chat", CoreDoraChat);
-
-  /*
-   *
-   *
-   */
   function CoreSwitch(node, options) {
     const params = options.split("/");
     var string = params[0];
@@ -1251,105 +948,6 @@ export const Core = function (DORA, config = {}) {
     });
   }
   DORA.registerType("switch", CoreSwitch);
-
-  /*
-   *
-   *
-   */
-  function CoreCheck(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
-    node.on("input", function (msg) {
-      if (typeof msg.quiz === "undefined") msg.quiz = utils.quizObject();
-      let message = options;
-      if (isTemplated) {
-        message = utils.mustache.render(message, msg);
-      }
-      const params = message.split("/");
-      const n = [];
-      msg.topicPriority =
-        typeof msg.topicPriority !== "undefined" ? msg.topicPriority : 0;
-      params.forEach((message) => {
-        msg.topicPriority += utils.nGramCheck(msg.payload, message);
-      });
-      node.send(msg);
-    });
-  }
-  DORA.registerType("check", CoreCheck);
-
-  /*
-   *
-   *
-   */
-  function CoreMecab(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
-    node.on("input", function (msg) {
-      let payload = options;
-      if (payload === "" || payload === null) {
-        payload = msg.payload;
-      } else {
-        if (isTemplated) {
-          payload = utils.mustache.render(payload, msg);
-        }
-      }
-      mecab.parse(payload, (err, result) => {
-        if (err) node.err(err);
-        if (!("mecab" in msg)) {
-          msg.mecab = {};
-        }
-        msg.mecab.result = result
-          .map((v) => {
-            return v[0];
-          })
-          .join(" ");
-        node.send(msg);
-      });
-    });
-  }
-  DORA.registerType("mecab", CoreMecab);
-
-  /*
-   *
-   *
-   */
-  function CoreMecabCheck(node, options) {
-    const string = options.split("/");
-    var isTemplated = (string || "").indexOf("{{") != -1;
-    node.on("input", function (msg) {
-      msg.topicPriority =
-        typeof msg.topicPriority !== "undefined" ? msg.topicPriority : 0;
-      if (typeof msg.quiz === "undefined") msg.quiz = utils.quizObject();
-      const n = [];
-      let message = string;
-      if (isTemplated) {
-        message = utils.mustache.render(message, msg);
-      }
-      if (node._message == null || node._message !== message) {
-        node._message = message;
-        mecab.compare(
-          node._message,
-          msg.payload,
-          (err, { point, sentenses, length }) => {
-            if (err) node.err(new Error("比較エラー"));
-            msg.topicPriority += point;
-            node._data = sentenses;
-            node.send(msg);
-          }
-        );
-      } else {
-        mecab.compare(
-          node._data,
-          msg.payload,
-          (err, { point, sentenses, length }) => {
-            if (err) node.err(new Error("比較エラー"));
-            msg.topicPriority += point;
-            node.send(msg);
-          }
-        );
-      }
-    });
-  }
-  DORA.registerType("mecabCheck", CoreMecabCheck);
-  DORA.registerType("mecab.check", CoreMecabCheck);
 
   /*
    *
@@ -1462,155 +1060,6 @@ export const Core = function (DORA, config = {}) {
   }
   DORA.registerType("select.layout", QuizSelectLayout);
 
-  // /**
-  //  *
-  //  *
-  //  */
-  // function QuizOptionCategory(node, options) {
-  //   var isTemplated = (options || "").indexOf("{{") != -1;
-  //   node.on("input", function (msg) {
-  //     QuizCategory(node, msg, options, isTemplated);
-  //   });
-  // }
-  // DORA.registerType("category", QuizOptionCategory);
-
-  // /*
-  //  *
-  //  *
-  //  */
-  // function QuizOptionOK(node, options) {
-  //   var isTemplated = (options || "").indexOf("{{") != -1;
-  //   node.on("input", function (msg) {
-  //     QuizOK(node, msg, options, isTemplated);
-  //   });
-  // }
-  // DORA.registerType("ok", QuizOptionOK);
-
-  // /*
-  //  *
-  //  *
-  //  */
-  // function QuizOptionOKImage(node, options) {
-  //   var isTemplated = (options || "").indexOf("{{") != -1;
-  //   node.on("input", function (msg) {
-  //     QuizOKImage(node, msg, options, isTemplated);
-  //   });
-  // }
-  // DORA.registerType("ok.image", QuizOptionOKImage);
-
-  // /*
-  //  *
-  //  *
-  //  */
-  // function QuizOptionNG(node, options) {
-  //   var isTemplated = (options || "").indexOf("{{") != -1;
-  //   node.on("input", function (msg) {
-  //     QuizNG(node, msg, options, isTemplated);
-  //   });
-  // }
-  // DORA.registerType("ng", QuizOptionNG);
-
-  // /*
-  //  *
-  //  *
-  //  */
-  // function QuizOptionNGImage(node, options) {
-  //   var isTemplated = (options || "").indexOf("{{") != -1;
-  //   node.on("input", function (msg) {
-  //     QuizNGImage(node, msg, options, isTemplated);
-  //   });
-  // }
-  // DORA.registerType("ng.image", QuizOptionNGImage);
-
-  // /*
-  //  *
-  //  *
-  //  */
-  // function QuizRun(node, options) {
-  //   var isTemplated = (options || "").indexOf("{{") != -1;
-  //   node.on("input", async function (msg) {
-  //     if (!node.isAlive()) return;
-  //     let nextscript = options || msg.payload;
-  //     if (isTemplated) {
-  //       nextscript = utils.mustache.render(nextscript, msg);
-  //     }
-  //     nextscript = nextscript.trim();
-  //     //console.log(`nextscript ${nextscript}`);
-  //     if (nextscript.indexOf("http") == 0) {
-  //       const res = await node.flow.request({
-  //         type: "scenario",
-  //         action: "load",
-  //         uri: nextscript,
-  //         username: msg.username,
-  //       });
-  //       //console.log(`res ${JSON.stringify(res)}`);
-  //       msg._nextscript = res.next_script;
-  //     } else {
-  //       msg._nextscript = nextscript;
-  //     }
-  //     node.end(null, msg);
-  //   });
-  // }
-  // DORA.registerType("run", QuizRun);
-
-  // /*
-  //  * Google Sheet に値を書き込む
-  //  *
-  //  */
-  // function AppendToGoogleSheet(node, options) {
-  //   var isTemplated = (options || "").indexOf("{{") != -1;
-  //   node.on("input", async function (msg) {
-  //     try {
-  //       let message = options || msg.payload;
-  //       if (isTemplated) {
-  //         message = utils.mustache.render(message, msg);
-  //       }
-  //       if (message) {
-  //         const payload = message.split("/");
-  //         const body = {
-  //           payload,
-  //           ...this.credential(),
-  //         };
-  //         if (typeof msg.googleSheetId !== "undefined") {
-  //           let host = "localhost";
-  //           let port = 3090;
-  //           if (typeof msg.dora !== "undefined") {
-  //             if (typeof msg.dora.host !== "undefined") {
-  //               host = msg.dora.host;
-  //             }
-  //             if (typeof msg.dora.port !== "undefined") {
-  //               port = msg.dora.port;
-  //             }
-  //           }
-  //           body.sheetId = msg.googleSheetId;
-  //           const headers = {};
-  //           headers["Content-Type"] = "application/json";
-  //           let response = await fetch(
-  //             `http://${host}:${port}/google/append-to-sheet`,
-  //             {
-  //               method: "POST",
-  //               headers,
-  //               body: JSON.stringify(body),
-  //             }
-  //           );
-  //           if (response.ok) {
-  //             const data = await response.text();
-  //             //レスポンスは処理しない
-  //           }
-  //         } else {
-  //           //エラーは処理しない
-  //         }
-  //       } else {
-  //         //エラーは処理しない
-  //       }
-  //     } catch (err) {
-  //       //エラーは処理しない
-  //     }
-  //     node.next(msg);
-  //   });
-  // }
-  // DORA.registerType("append-to-google-sheet", AppendToGoogleSheet);
-
   /*
    * 値を変換する
    *
@@ -1637,34 +1086,6 @@ export const Core = function (DORA, config = {}) {
     });
   }
   DORA.registerType("convert", Convert);
-
-  /*
-   * 電源を切る
-   *
-   */
-  function PowerOff(node, options) {
-    node.on("input", async function (msg) {
-      await node.flow.request({
-        type: "poweroff",
-      });
-      node.next(msg);
-    });
-  }
-  DORA.registerType("poweroff", PowerOff);
-
-  /*
-   * 再起動
-   *
-   */
-  function Reboot(node, options) {
-    node.on("input", async function (msg) {
-      await node.flow.request({
-        type: "reboot",
-      });
-      node.next(msg);
-    });
-  }
-  DORA.registerType("reboot", Reboot);
 
   /*
    * 設定値のセーブ
@@ -1738,18 +1159,6 @@ export const Core = function (DORA, config = {}) {
     });
   }
   DORA.registerType("load", Load);
-
-  // /**
-  //  *
-  //  *
-  //  */
-  // function QuizSlideFunc(node, options) {
-  //   var isTemplated = (options || "").indexOf("{{") != -1;
-  //   node.on("input", async function (msg) {
-  //     await QuizSlide(node, msg, options, isTemplated);
-  //   });
-  // }
-  // DORA.registerType("slide", QuizSlideFunc);
 
   /**
    *

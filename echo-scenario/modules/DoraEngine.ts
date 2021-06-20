@@ -44,7 +44,6 @@ export class DoraEngine {
       this.robots[username].next = callback;
     });
     socket.addListener("speech-to-text", async (payload, callback) => {
-      const { params } = payload;
       if (backendHost) {
         await axios.post(`${backendHost}/speech-to-text/start`, {
           username,
@@ -77,21 +76,23 @@ export class DoraEngine {
           start: 0,
         },
       },
-      (err, msg) => {
+      async (err, msg) => {
         if (err) {
           console.error(err);
           return;
         }
-        console.log({ username, ...msg });
+        if (backendHost) {
+          await axios.post(`${backendHost}/exit`, { username, ...msg });
+        }
       }
     );
   }
 
   think(username: string, transcript: string) {
-    this.robots[username].next({ transcript });
+    if (this.robots[username].next) this.robots[username].next({ transcript });
   }
 
   ready(username: string) {
-    this.robots[username].next({});
+    if (this.robots[username].next) this.robots[username].next({});
   }
 }
