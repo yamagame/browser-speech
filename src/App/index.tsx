@@ -7,6 +7,8 @@ import {
   processRecognition,
   speechSynthesis,
   stopRecognition,
+  initialStartPresentation,
+  initialStartRecoginition,
 } from "./usecase";
 import { Route } from "react-router-dom";
 import { Login } from "pages/Login";
@@ -18,8 +20,12 @@ function App() {
   const history = useHistory();
 
   const [username, setUsername] = React.useState("");
-  const [startPresentation, setStartPresentation] = React.useState(false);
-  const [startRecognition, setStartRecognition] = React.useState(false);
+  const [startPresentation, setStartPresentation] = React.useState(
+    initialStartPresentation
+  );
+  const [startRecognition, setStartRecognition] = React.useState(
+    initialStartRecoginition
+  );
   const [result, setResult] = React.useState("");
   const [loading, setLoading] = React.useState(true);
 
@@ -38,7 +44,11 @@ function App() {
 
   // 音声認識
   React.useEffect(() => {
-    processRecognition({ startRecognition, setResult, setStartRecognition });
+    processRecognition({
+      startRecognition,
+      setResult,
+      setStartRecognition,
+    });
   }, [startRecognition]);
 
   const onChangeUsername = (e: any) => {
@@ -58,8 +68,8 @@ function App() {
         </Route>
         <Route exact path="/">
           <Presentation
-            start={startPresentation}
-            startRecognition={startRecognition}
+            start={startPresentation.state}
+            startRecognition={startRecognition.state}
             result={result}
             onStartPresentation={async () => {
               setResult("");
@@ -68,14 +78,14 @@ function App() {
             }}
             onStopPresentation={() => {
               setResult("");
-              setStartPresentation(false);
+              setStartPresentation({ state: false });
               stopRecognition();
             }}
             onStartRecognition={() => {
-              setStartRecognition(true);
+              setStartRecognition({ state: true });
             }}
             onStopRecognition={() => {
-              setStartRecognition(false);
+              setStartRecognition({ state: false });
             }}
           />
         </Route>

@@ -3,6 +3,7 @@ import { Flow } from "./libs/flow";
 import { Node } from "./libs/node";
 import { Core } from "./modules/core";
 import { Http } from "./modules/http";
+import { Nlp } from "./modules/nlp";
 
 import * as utils from "./libs/utils";
 const util = require("util");
@@ -18,7 +19,7 @@ export type DoraPlayProps = {
   defaults: any;
 };
 
-export { Node };
+export { Node, Flow };
 
 export class Dora {
   config;
@@ -49,6 +50,8 @@ export class Dora {
     Core(this);
     this._modname = "http";
     Http(this);
+    this._modname = "nlp";
+    Nlp(this);
     this.utils = utils;
     this._errorInfo = {};
   }
@@ -456,8 +459,7 @@ export class Dora {
       label = label.split("/");
     }
     label = label.slice(index);
-    var numLabels = label.length;
-    for (var i = 0; i < numLabels; i++) {
+    for (var i = 0; i < label.length; i++) {
       const _label = label[i].trim();
       if (_label.indexOf(":") === 0) {
         if (!this.labelNodes[_label]) {

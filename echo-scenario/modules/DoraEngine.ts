@@ -44,9 +44,11 @@ export class DoraEngine {
       this.robots[username].next = callback;
     });
     socket.addListener("speech-to-text", async (payload, callback) => {
+      const { timeout } = payload.params;
       if (backendHost) {
         await axios.post(`${backendHost}/speech-to-text/start`, {
           username,
+          timeout,
         });
       }
       this.robots[username].next = callback;
@@ -82,6 +84,7 @@ export class DoraEngine {
         dora.play(
           {
             username,
+            scenarioDir: this.options.scenarioDir,
           },
           {
             socket,

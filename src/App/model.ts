@@ -5,6 +5,8 @@ interface ControlMessageTextToSpeech {
 
 interface ControlMessageSpeechToTextStart {
   action: "speech-to-text/start";
+  timeout: number;
+  username: string;
 }
 
 interface ControlMessageSpeechToTextStop {

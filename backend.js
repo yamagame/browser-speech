@@ -63,8 +63,8 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/speech-to-text/start", (req, res) => {
-  const { username } = req.session;
-  broadcast({ action: "speech-to-text/start", username });
+  const { timeout, username } = req.body;
+  broadcast({ action: "speech-to-text/start", username, timeout });
   res.sendStatus(200);
 });
 

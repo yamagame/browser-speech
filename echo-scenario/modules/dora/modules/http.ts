@@ -8,7 +8,7 @@ export const Http = function (DORA, config = {}) {
    */
   function POSTRequest(mode) {
     return function (node, options) {
-      var isTemplated = (options || "").indexOf("{{") != -1;
+      const isTemplated = (options || "").indexOf("{{") != -1;
       node.on("input", async function (msg) {
         let message = options;
         if (isTemplated) {
@@ -93,7 +93,7 @@ export const Http = function (DORA, config = {}) {
    */
   function GETRequest(mode) {
     return function (node, options) {
-      var isTemplated = (options || "").indexOf("{{") != -1;
+      const isTemplated = (options || "").indexOf("{{") != -1;
       node.on("input", async function (msg) {
         let message = options;
         if (isTemplated) {

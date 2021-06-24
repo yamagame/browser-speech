@@ -1,7 +1,10 @@
+import { Flow } from "./flow";
 const Emitter = require("component-emitter");
 const utils = require("./utils");
 
 export class Node extends Emitter {
+  flow: Flow;
+
   constructor(flow) {
     super();
     this.flow = flow;

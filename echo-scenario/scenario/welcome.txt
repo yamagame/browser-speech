@@ -1,11 +1,13 @@
 ようこそ
 ご用件をどうぞ
 :loop
+/timeout/5
 /speech-to-text
 /if/テスト/:test
 /if/こんにちは/:hello1
 /if/こんばんは/:hello2
 /if/おはよう/:hello3
+/if/[timeout]/:end
 /text-to-speech
 /goto/:loop
 
@@ -24,3 +26,5 @@
 :hello3
 /call/hello3.txt
 /goto/:loop
+
+:end

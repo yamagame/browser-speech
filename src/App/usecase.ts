@@ -3,6 +3,24 @@ import SockJS from "sockjs-client";
 import { ControlMessage } from "./model";
 import { useHistory } from "react-router-dom";
 
+export const initialStartRecoginition: {
+  state: boolean;
+  timeout?: number;
+} = {
+  state: false,
+  timeout: 15,
+};
+
+export type StartRecoginitionProps = typeof initialStartRecoginition;
+
+export const initialStartPresentation: {
+  state: boolean;
+} = {
+  state: false,
+};
+
+export type StartPresentationProps = typeof initialStartPresentation;
+
 declare const webkitSpeechRecognition: typeof SpeechRecognition;
 
 export const speechRecognition = (() => {
@@ -68,8 +86,8 @@ export const processControl = ({
   setStartPresentation,
 }: {
   setResult: (value: string) => void;
-  setStartRecognition: (value: boolean) => void;
-  setStartPresentation: (value: boolean) => void;
+  setStartRecognition: (value: StartRecoginitionProps) => void;
+  setStartPresentation: (value: StartPresentationProps) => void;
 }) => {
   const sock = new SockJS("/controller");
   const onmessage = async (e: MessageEvent) => {
@@ -81,18 +99,18 @@ export const processControl = ({
         await axios.post("/ready");
         break;
       case "speech-to-text/start":
-        setStartRecognition(true);
-        setStartPresentation(true);
+        setStartRecognition({ state: true, timeout: data.timeout });
+        setStartPresentation({ state: true });
         setResult("");
         break;
       case "speech-to-text/stop":
-        setStartRecognition(false);
-        setStartPresentation(true);
+        setStartRecognition({ state: false });
+        setStartPresentation({ state: true });
         setResult("");
         break;
       case "exit":
-        setStartPresentation(false);
-        setStartRecognition(false);
+        setStartPresentation({ state: false });
+        setStartRecognition({ state: false });
         setResult("");
         break;
     }
@@ -108,23 +126,42 @@ export const processRecognition = async ({
   setResult,
   setStartRecognition,
 }: {
-  startRecognition: boolean;
+  startRecognition: StartRecoginitionProps;
   setResult: (value: string) => void;
-  setStartRecognition: (value: boolean) => void;
+  setStartRecognition: (value: StartRecoginitionProps) => void;
 }) => {
   if (speechRecognition !== undefined) {
-    if (startRecognition) {
+    console.log(startRecognition);
+    if (startRecognition.state) {
+      const { timeout } = startRecognition;
       await axios.post("/recognition", { state: "start" });
+      let doneTranscript = false;
+      console.log(timeout);
+      const timeoutTimer =
+        timeout &&
+        setTimeout(() => {
+          if (!doneTranscript) {
+            speechRecognition.stop();
+          }
+        }, timeout * 1000);
+      console.log(timeoutTimer);
       speechRecognition.onresult = async (e) => {
         setResult(e.results[0][0].transcript);
         // 認識結果を送信
         await axios.post("/transcript", {
           transcript: e.results[0][0].transcript,
         });
+        doneTranscript = true;
       };
       speechRecognition.onend = async () => {
-        setStartRecognition(false);
+        if (timeoutTimer) clearTimeout(timeoutTimer);
+        setStartRecognition({ state: false });
         // 音声認識終了通知
+        if (!doneTranscript) {
+          await axios.post("/transcript", {
+            transcript: "[timeout]",
+          });
+        }
         await axios.post("/recognition", { state: "end" });
       };
       speechRecognition.start();

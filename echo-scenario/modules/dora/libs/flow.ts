@@ -1,7 +1,9 @@
+import { Dora } from "../";
+
 const utils = require("./utils");
 
 export class Flow {
-  engine;
+  engine: Dora;
   runnode;
   running;
   execNodes;

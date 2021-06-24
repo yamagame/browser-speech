@@ -1,3 +1,4 @@
+import { Node } from "../";
 const utils = require("../libs/utils");
 
 export const Core = function (DORA, config = {}) {
@@ -6,7 +7,7 @@ export const Core = function (DORA, config = {}) {
    *
    */
   function CoreLog(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
+    const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", async function (msg) {
       const { socket } = node.flow.options;
       let logstr = "";
@@ -32,7 +33,7 @@ export const Core = function (DORA, config = {}) {
    *
    */
   function CoreError(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
+    const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", function (msg) {
       var message = options || msg.payload;
       if (isTemplated) {
@@ -82,13 +83,13 @@ export const Core = function (DORA, config = {}) {
   DORA.registerType("label", CoreLabel);
 
   /*
-   *
-   *
+   * /if/こんにちは/:label
+   * payload に指定した文字が含まれていれば label へ移動
    */
   function CoreIf(node, options) {
     const params = options.split("/");
     var string = params[0];
-    var isTemplated = (string || "").indexOf("{{") != -1;
+    const isTemplated = (string || "").indexOf("{{") != -1;
     if (params.length > 1) {
       node.nextLabel(params.slice(1).join("/"));
     }
@@ -114,8 +115,8 @@ export const Core = function (DORA, config = {}) {
   DORA.registerType("if", CoreIf);
 
   /*
-   *
-   *
+   * /goto/:label
+   * label へ移動
    */
   function CoreGoto(node, options) {
     if (node.nextLabel(options).length <= 0)
@@ -220,7 +221,7 @@ export const Core = function (DORA, config = {}) {
    *
    */
   function CoreDelay(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
+    const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", async function (msg) {
       let rate =
         typeof msg.defaultInterval === "undefined"
@@ -259,77 +260,9 @@ export const Core = function (DORA, config = {}) {
    *
    *
    */
-  function CoreJoin(node, options) {
-    node.nextLabel(options);
-    node.on("input", function (msg) {
-      let freeze = false;
-      if (msg._forks && msg._forks.length > 0) {
-        const forkid = msg._forks[msg._forks.length - 1];
-        if (this.global()._forks && this.global()._forks[forkid]) {
-          var forks = this.global()._forks[forkid];
-          if (
-            typeof msg.topicPriority !== "undefined" &&
-            forks.priority < msg.topicPriority
-          ) {
-            forks.priority = msg.topicPriority;
-            forks.name = msg.topic;
-            forks.msg = utils.clone(msg);
-            if (forks.node) {
-              const n = forks.node;
-              forks.node = node;
-              n.end(null, msg);
-            } else {
-              forks.node = node;
-            }
-            freeze = true;
-          }
-          forks.numWire--;
-          if (forks.numWire <= 0) {
-            msg._forks.pop();
-            const forkid = msg._forks[msg._forks.length - 1];
-            if (
-              typeof forks.msg.topic !== "undefined" &&
-              forks.msg.topicPriority !== 0
-            ) {
-              forks.msg._forks = msg._forks;
-              if (node.wires.length > 1) {
-                forks.node.jump(forks.msg);
-              } else {
-                forks.node.next(forks.msg);
-              }
-              if (!freeze) {
-                node.end(null, msg);
-              }
-            } else {
-              if (msg.topicPriority === 0) {
-                delete msg.topic;
-              }
-              if (node.wires.length > 1) {
-                node.jump(msg);
-              } else {
-                node.next(msg);
-              }
-            }
-            return;
-          }
-        } else {
-          //error
-        }
-      }
-      if (!freeze) {
-        node.end(null, msg);
-      }
-    });
-  }
-  DORA.registerType("join", CoreJoin);
-
-  /*
-   *
-   *
-   */
   function Sound(type) {
     return function (node, options) {
-      var isTemplated = (options || "").indexOf("{{") != -1;
+      const isTemplated = (options || "").indexOf("{{") != -1;
       node.on("input", async function (msg) {
         const { socket } = node.flow.options;
         let message = options;
@@ -363,7 +296,7 @@ export const Core = function (DORA, config = {}) {
    *
    */
   function CoreSet(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
+    const isTemplated = (options || "").indexOf("{{") != -1;
     const p = options.split("/");
     const field = p[0].split(".").filter((v) => v !== "");
     if (p.length < 2) {
@@ -414,7 +347,7 @@ export const Core = function (DORA, config = {}) {
    *
    */
   function CoreSetString(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
+    const isTemplated = (options || "").indexOf("{{") != -1;
     const p = options.split("/");
     const field = p[0].split(".").filter((v) => v !== "");
     if (p.length < 2) {
@@ -456,7 +389,7 @@ export const Core = function (DORA, config = {}) {
    *
    */
   function CoreSetNumber(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
+    const isTemplated = (options || "").indexOf("{{") != -1;
     const p = options.split("/");
     const field = p[0].split(".").filter((v) => v !== "");
     if (p.length < 2) {
@@ -536,8 +469,8 @@ export const Core = function (DORA, config = {}) {
     if (params.length < 2) {
       throw new Error("パラメータがありません。");
     }
-    var isTemplated1 = (params[0] || "").indexOf("{{") != -1;
-    var isTemplated2 = (params[1] || "").indexOf("{{") != -1;
+    const isTemplated1 = (params[0] || "").indexOf("{{") != -1;
+    const isTemplated2 = (params[1] || "").indexOf("{{") != -1;
     node.on("input", async function (msg) {
       let p1 = params[0];
       let p2 = params[1];
@@ -585,7 +518,7 @@ export const Core = function (DORA, config = {}) {
    *
    */
   function TextToSpeech(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
+    const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", async function (msg) {
       const { socket } = node.flow.options;
       var message = options || msg.payload;
@@ -889,8 +822,8 @@ export const Core = function (DORA, config = {}) {
    *
    *
    */
-  function JoinFlow(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
+  function Join(node, options) {
+    const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", function (msg) {
       const { socket } = node.flow.options;
       var option = options;
@@ -915,7 +848,7 @@ export const Core = function (DORA, config = {}) {
       );
     });
   }
-  DORA.registerType("join-flow", JoinFlow);
+  DORA.registerType("join", Join);
 
   /*
    *
@@ -924,7 +857,7 @@ export const Core = function (DORA, config = {}) {
   function CoreSwitch(node, options) {
     const params = options.split("/");
     var string = params[0];
-    var isTemplated = (string || "").indexOf("{{") != -1;
+    const isTemplated = (string || "").indexOf("{{") != -1;
     if (params.length > 1) {
       node.nextLabel(params.slice(1).join("/"));
     } else {
@@ -954,7 +887,7 @@ export const Core = function (DORA, config = {}) {
    *
    */
   function CorePayload(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
+    const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", function (msg) {
       var message = options || msg.payload;
       if (isTemplated) {
@@ -1021,7 +954,7 @@ export const Core = function (DORA, config = {}) {
    *
    */
   function QuizSelect(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
+    const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", function (msg) {
       if (typeof msg.quiz === "undefined") msg.quiz = utils.quizObject();
       let message = options;
@@ -1045,7 +978,7 @@ export const Core = function (DORA, config = {}) {
    *
    */
   function Run(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
+    const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", async function (msg) {
       if (!node.isAlive()) return;
       let nextscript = options || msg.payload;
@@ -1076,7 +1009,7 @@ export const Core = function (DORA, config = {}) {
    *
    */
   function Convert(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
+    const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", async function (msg) {
       let message = options || msg.payload;
       if (isTemplated) {
@@ -1134,7 +1067,7 @@ export const Core = function (DORA, config = {}) {
    *
    */
   function Load(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
+    const isTemplated = (options || "").indexOf("{{") != -1;
     const p = options ? options.split("/") : [];
     let field = p.length > 0 ? p[0].split(".").filter((v) => v !== "") : [];
     if (p.length < 1) {
@@ -1176,7 +1109,7 @@ export const Core = function (DORA, config = {}) {
    *
    */
   function CommmandFunc(node, options) {
-    var isTemplated = (options || "").indexOf("{{") != -1;
+    const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", async function (msg) {
       const { socket } = node.flow.options;
       let command = options || msg.payload;
@@ -1205,4 +1138,31 @@ export const Core = function (DORA, config = {}) {
     });
   }
   DORA.registerType("command", CommmandFunc);
+
+  /*
+   * 音声認識のタイムアウト値(秒)を指定する
+   * /timeout/3
+   */
+  function Timeout(node: Node, options) {
+    const isTemplated = (options || "").indexOf("{{") != -1;
+    node.on("input", async function (msg) {
+      const val = (v) => {
+        if (utils.isNumeric(v)) {
+          if (v.indexOf(".") >= 0) {
+            return parseFloat(v);
+          } else {
+            return parseInt(v);
+          }
+        }
+        node.err(new Error("タイムアウトの値が数字ではありません。"));
+      };
+      let message = options;
+      if (isTemplated) {
+        message = utils.mustache.render(message, msg);
+      }
+      msg.timeout = val(message);
+      node.next(msg);
+    });
+  }
+  DORA.registerType("timeout", Timeout);
 };
