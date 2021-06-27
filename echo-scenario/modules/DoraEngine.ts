@@ -82,7 +82,6 @@ export class DoraEngine {
         if (!err.info.reason) {
           err.info.reason = err.toString();
         }
-        console.log(err.info);
         run_scenario = false;
       }
       try {

@@ -94,7 +94,6 @@ export const Core = function (DORA, config = {}) {
       node.nextLabel(params.slice(1).join("/"));
     }
     node.on("input", function (msg) {
-      if (typeof msg.quiz === "undefined") msg.quiz = utils.quizObject();
       let message = string;
       if (isTemplated) {
         message = utils.mustache.render(message, msg);
@@ -157,8 +156,8 @@ export const Core = function (DORA, config = {}) {
   DORA.registerType("return", CoreReturn);
 
   /*
-   *
-   *
+   *  ランダムに遷移
+   *  /goto.random/:A/:B/:C
    */
   function CoreGotoRandom(node, options) {
     if (node.nextLabel(options).length <= 0)
@@ -194,8 +193,8 @@ export const Core = function (DORA, config = {}) {
   DORA.registerType("goto.random", CoreGotoRandom);
 
   /*
-   *
-   *
+   *  ラベル順に遷移
+   *  /goto.sequence/:A/:B/:C
    */
   function CoreGotoSequence(node, options) {
     if (node.nextLabel(options).length <= 0)
@@ -213,7 +212,6 @@ export const Core = function (DORA, config = {}) {
       node.send(t);
     });
   }
-  DORA.registerType("goto.sequece", CoreGotoSequence);
   DORA.registerType("goto.sequence", CoreGotoSequence);
 
   /*
@@ -525,6 +523,7 @@ export const Core = function (DORA, config = {}) {
       if (isTemplated) {
         message = utils.mustache.render(message, msg);
       }
+      delete msg.match;
       const params: {
         speed?;
         volume?;
@@ -864,7 +863,6 @@ export const Core = function (DORA, config = {}) {
       node.nextLabel(string);
     }
     node.on("input", function (msg) {
-      if (typeof msg.quiz === "undefined") msg.quiz = utils.quizObject();
       let message = string;
       if (isTemplated) {
         message = utils.mustache.render(message, msg);
@@ -948,30 +946,6 @@ export const Core = function (DORA, config = {}) {
     });
   }
   DORA.registerType("eval", CoreEval);
-
-  /*
-   *
-   *
-   */
-  function QuizSelect(node, options) {
-    const isTemplated = (options || "").indexOf("{{") != -1;
-    node.on("input", function (msg) {
-      if (typeof msg.quiz === "undefined") msg.quiz = utils.quizObject();
-      let message = options;
-      if (isTemplated) {
-        message = utils.mustache.render(message, msg);
-      }
-      msg.quiz.pages.push({
-        action: "quiz",
-        question: message,
-        choices: [],
-        answers: [],
-        selects: [],
-      });
-      node.send(msg);
-    });
-  }
-  DORA.registerType("select", QuizSelect);
 
   /*
    *

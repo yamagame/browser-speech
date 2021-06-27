@@ -10,7 +10,6 @@ const util = require("util");
 
 const removeQuote = (str) => {
   if (!str) return str;
-  console.log(str.trim().match(/"(.+)"/));
   const t = str.trim().match(/"(.+)"/) || ["", str];
   return t[1];
 };
