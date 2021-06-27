@@ -13,6 +13,17 @@ interface ControlMessageSpeechToTextStop {
   action: "speech-to-text/stop";
 }
 
+interface ControlMessageImage {
+  action: "image";
+  image: {
+    src?: string;
+  };
+}
+
+interface ControlMessageStart {
+  action: "start";
+}
+
 interface ControlMessageExit {
   action: "exit";
 }
@@ -21,4 +32,6 @@ export type ControlMessage =
   | ControlMessageTextToSpeech
   | ControlMessageSpeechToTextStart
   | ControlMessageSpeechToTextStop
+  | ControlMessageImage
+  | ControlMessageStart
   | ControlMessageExit;

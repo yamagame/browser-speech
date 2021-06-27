@@ -5,7 +5,7 @@ const utils = require("./utils");
 export class Node extends Emitter {
   flow: Flow;
 
-  constructor(flow) {
+  constructor(flow: Flow) {
     super();
     this.flow = flow;
     this.wires = [];

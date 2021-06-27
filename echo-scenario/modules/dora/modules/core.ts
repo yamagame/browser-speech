@@ -6,7 +6,7 @@ export const Core = function (DORA, config = {}) {
    *
    *
    */
-  function CoreLog(node, options) {
+  function CoreLog(node: Node, options) {
     const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", async function (msg) {
       const { socket } = node.flow.options;
@@ -261,7 +261,7 @@ export const Core = function (DORA, config = {}) {
    *
    */
   function Sound(type) {
-    return function (node, options) {
+    return function (node: Node, options) {
       const isTemplated = (options || "").indexOf("{{") != -1;
       node.on("input", async function (msg) {
         const { socket } = node.flow.options;
@@ -517,7 +517,7 @@ export const Core = function (DORA, config = {}) {
    *
    *
    */
-  function TextToSpeech(node, options) {
+  function TextToSpeech(node: Node, options) {
     const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", async function (msg) {
       const { socket } = node.flow.options;
@@ -609,7 +609,7 @@ export const Core = function (DORA, config = {}) {
    *
    *
    */
-  function SpeechToText(node, options) {
+  function SpeechToText(node: Node, options) {
     node.nextLabel(options);
     node.on("input", function (msg) {
       const { socket } = node.flow.options;
@@ -620,7 +620,7 @@ export const Core = function (DORA, config = {}) {
         languageCode?;
         alternativeLanguageCodes?;
       } = {
-        timeout: 30000,
+        timeout: 15000,
         sensitivity: "keep",
         level: "keep",
       };
@@ -715,7 +715,7 @@ export const Core = function (DORA, config = {}) {
    *
    *
    */
-  function WaitEvent(node, options) {
+  function WaitEvent(node: Node, options) {
     node.nextLabel(options);
     node.on("input", function (msg) {
       const { socket } = node.flow.options;
@@ -797,7 +797,7 @@ export const Core = function (DORA, config = {}) {
    *
    *
    */
-  function StopSpeech(node, options) {
+  function StopSpeech(node: Node, options) {
     node.on("input", function (msg) {
       const { socket } = node.flow.options;
       socket.emit(
@@ -822,7 +822,7 @@ export const Core = function (DORA, config = {}) {
    *
    *
    */
-  function Join(node, options) {
+  function Join(node: Node, options) {
     const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", function (msg) {
       const { socket } = node.flow.options;
@@ -1108,7 +1108,7 @@ export const Core = function (DORA, config = {}) {
    *
    *
    */
-  function CommmandFunc(node, options) {
+  function CommmandFunc(node: Node, options) {
     const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", async function (msg) {
       const { socket } = node.flow.options;
@@ -1165,4 +1165,40 @@ export const Core = function (DORA, config = {}) {
     });
   }
   DORA.registerType("timeout", Timeout);
+
+  /*
+   * 画像表示
+   * /image/"http://localhost:3000/img/picture.png"
+   * /image/"img/picture.png"
+   */
+  function Image(node: Node, options) {
+    console.log(options);
+    const isTemplated = (options || "").indexOf("{{") != -1;
+    node.on("input", async function (msg) {
+      const { socket, host } = node.flow.options;
+      let message = options;
+      if (isTemplated) {
+        message = utils.mustache.render(message, msg);
+      }
+      if (![/^http.+/, /^:.+/, /^\/\/.+/].some((re) => message.match(re))) {
+        message = `${host}/${message}`;
+      }
+      socket.emit(
+        "display/image",
+        {
+          msg,
+          params: {
+            image: {
+              src: message,
+            },
+            ...this.credential(),
+          },
+          node,
+        },
+        (res) => {}
+      );
+      node.next(msg);
+    });
+  }
+  DORA.registerType("image", Image);
 };

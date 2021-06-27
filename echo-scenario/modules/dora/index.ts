@@ -8,10 +8,18 @@ import { Nlp } from "./modules/nlp";
 import * as utils from "./libs/utils";
 const util = require("util");
 
+const removeQuote = (str) => {
+  if (!str) return str;
+  console.log(str.trim().match(/"(.+)"/));
+  const t = str.trim().match(/"(.+)"/) || ["", str];
+  return t[1];
+};
+
 const modules = [];
 
 export type DoraPlayProps = {
   socket: EventEmitter;
+  host: string;
   range: {
     start: number;
     end?: number;
@@ -133,7 +141,7 @@ export class Dora {
         const t = m[1].match(/(.+?)\/(.*)/);
         if (t) {
           var cmd = t[1];
-          var opt = t[2];
+          var opt = removeQuote(t[2]);
         } else {
           var cmd = m[1];
           var opt = null;

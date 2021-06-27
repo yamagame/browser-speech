@@ -82,10 +82,12 @@ export const authCheck = ({
 
 export const processControl = ({
   setResult,
+  setImage,
   setStartRecognition,
   setStartPresentation,
 }: {
   setResult: (value: string) => void;
+  setImage: (value: string) => void;
   setStartRecognition: (value: StartRecoginitionProps) => void;
   setStartPresentation: (value: StartPresentationProps) => void;
 }) => {
@@ -106,6 +108,14 @@ export const processControl = ({
       case "speech-to-text/stop":
         setStartRecognition({ state: false });
         setStartPresentation({ state: true });
+        setResult("");
+        break;
+      case "image":
+        setImage(data.image.src ?? "");
+        break;
+      case "start":
+        setStartPresentation({ state: true });
+        setStartRecognition({ state: false });
         setResult("");
         break;
       case "exit":

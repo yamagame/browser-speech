@@ -7,6 +7,7 @@ import { Dora, Node } from "./dora";
 export type DoraEngineProps = {
   scenarioDir: string;
   backendHost: string;
+  scenarioHost: string;
 };
 
 type Robot = {
@@ -19,6 +20,7 @@ export class DoraEngine {
   options: DoraEngineProps = {
     scenarioDir: "",
     backendHost: "",
+    scenarioHost: "",
   };
   robots: { [index: string]: Robot } = {};
 
@@ -30,7 +32,7 @@ export class DoraEngine {
     const scenarioPath = (filename) =>
       path.join(this.options.scenarioDir, filename);
 
-    const { backendHost } = this.options;
+    const { backendHost, scenarioHost } = this.options;
 
     const socket = new EventEmitter();
     socket.addListener("text-to-speech", async (payload, callback) => {
@@ -53,6 +55,16 @@ export class DoraEngine {
       }
       this.robots[username].next = callback;
     });
+    socket.addListener("display/image", async (payload, callback) => {
+      const { image } = payload.params;
+      if (backendHost) {
+        await axios.post(`${backendHost}/display/image`, {
+          username,
+          image,
+        });
+      }
+      this.robots[username].next = callback;
+    });
 
     const dora = new Dora();
     this.robots[username] = { dora, socket, next: () => {} };
@@ -60,6 +72,9 @@ export class DoraEngine {
     const defaults = {};
 
     let run_scenario = true;
+
+    const res = { username };
+    await axios.post(`${backendHost}/start`, res);
 
     const play = async ({ startScenario, range, username }, defaults) => {
       function emitError(err) {
@@ -88,6 +103,7 @@ export class DoraEngine {
           },
           {
             socket,
+            host: scenarioHost,
             range,
             defaults,
           },
@@ -111,7 +127,6 @@ export class DoraEngine {
               return;
             }
             if (typeof msg._nextscript !== "undefined") {
-              console.log(`msg._nextscript ${msg._nextscript}`);
               if (run_scenario) {
                 play(
                   {
@@ -123,7 +138,9 @@ export class DoraEngine {
                 );
               }
             } else if (backendHost) {
-              await axios.post(`${backendHost}/exit`, { username, ...msg });
+              const res = { username, ...msg };
+              console.log(JSON.stringify(res, null, "  "));
+              await axios.post(`${backendHost}/exit`, res);
             }
           }
         );

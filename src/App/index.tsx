@@ -26,6 +26,7 @@ function App() {
   const [startRecognition, setStartRecognition] = React.useState(
     initialStartRecoginition
   );
+  const [image, setImage] = React.useState("");
   const [result, setResult] = React.useState("");
   const [loading, setLoading] = React.useState(true);
 
@@ -38,7 +39,12 @@ function App() {
   // サーバーからのコントロールメッセージを処理
   React.useEffect(
     () =>
-      processControl({ setResult, setStartRecognition, setStartPresentation }),
+      processControl({
+        setResult,
+        setImage,
+        setStartRecognition,
+        setStartPresentation,
+      }),
     []
   );
 
@@ -71,6 +77,7 @@ function App() {
             start={startPresentation.state}
             startRecognition={startRecognition.state}
             result={result}
+            image={image}
             onStartPresentation={async () => {
               setResult("");
               if (!startPresentation) speechSynthesis("");

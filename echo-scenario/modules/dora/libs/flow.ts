@@ -9,6 +9,7 @@ export class Flow {
   execNodes;
   parentFlow;
   labels;
+  options;
 
   constructor(engine, config = {}) {
     this.engine = engine;

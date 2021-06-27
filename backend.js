@@ -17,6 +17,7 @@ const app = express();
 const httpServer = http.createServer(app);
 
 const port = process.env.PORT || 4100;
+const backendHost = process.env.BACKEND_HOST || "http://localhost";
 const scenarioManagerHost = process.env.SCENARIO_MANAGER_HOST || null;
 
 app.use(
@@ -43,7 +44,7 @@ app.use(express.static("front"));
 
 app.use((req, res, next) => {
   console.log(req.path);
-  console.log(req.body);
+  console.log(JSON.stringify(req.body, null, "  "));
   next();
 });
 
@@ -62,34 +63,71 @@ app.post("/login", (req, res) => {
   res.sendStatus(403);
 });
 
+// echo-server -> browser
 app.post("/speech-to-text/start", (req, res) => {
   const { timeout, username } = req.body;
-  broadcast({ action: "speech-to-text/start", username, timeout });
+  broadcast({
+    action: "speech-to-text/start",
+    username,
+    timeout,
+  });
   res.sendStatus(200);
 });
 
+// echo-server -> browser
 app.post("/speech-to-text/stop", (req, res) => {
-  const { username } = req.session;
-  broadcast({ action: "speech-to-text/stop", username });
+  const { username } = req.body;
+  broadcast({
+    action: "speech-to-text/stop",
+    username,
+  });
   res.sendStatus(200);
 });
 
+// echo-server -> browser
+app.post("/display/image", (req, res) => {
+  const { image, username } = req.body;
+  broadcast({
+    action: "image",
+    username,
+    image,
+  });
+  res.sendStatus(200);
+});
+
+// echo-server -> browser
 app.post("/text-to-speech", (req, res) => {
   const { username } = req.body;
-  broadcast({ ...req.body, action: "text-to-speech", username });
+  broadcast({
+    ...req.body,
+    action: "text-to-speech",
+    username,
+  });
   res.sendStatus(200);
 });
 
+// echo-server -> browser
+app.post("/start", (req, res) => {
+  const { username } = req.body;
+  broadcast({ ...req.body, action: "start", username });
+  res.sendStatus(200);
+});
+
+// echo-server -> browser
 app.post("/exit", (req, res) => {
-  const { username } = req.session;
+  const { username } = req.body;
   broadcast({ ...req.body, action: "exit", username });
   res.sendStatus(200);
 });
 
+// browser -> echo-server
 app.post("/transcript", isLogined, (req, res) => {
   const { username } = req.session;
   if (scenarioManagerHost)
-    axios.post(`${scenarioManagerHost}/transcript`, { ...req.body, username });
+    axios.post(`${scenarioManagerHost}/transcript`, {
+      ...req.body,
+      username,
+    });
   res.sendStatus(200);
 });
 
@@ -98,24 +136,36 @@ app.post("/logout", (req, res) => {
   res.sendStatus(200);
 });
 
+// browser -> echo-server
 app.post("/init", (req, res) => {
   const { username } = req.session;
   if (scenarioManagerHost)
-    axios.post(`${scenarioManagerHost}/init`, { ...req.body, username });
+    axios.post(`${scenarioManagerHost}/init`, {
+      ...req.body,
+      username,
+    });
   res.sendStatus(200);
 });
 
+// browser -> echo-server
 app.post("/recognition", (req, res) => {
   const { username } = req.session;
   if (scenarioManagerHost)
-    axios.post(`${scenarioManagerHost}/recognition`, { ...req.body, username });
+    axios.post(`${scenarioManagerHost}/recognition`, {
+      ...req.body,
+      username,
+    });
   res.sendStatus(200);
 });
 
+// browser -> echo-server
 app.post("/ready", (req, res) => {
   const { username } = req.session;
   if (scenarioManagerHost)
-    axios.post(`${scenarioManagerHost}/ready`, { ...req.body, username });
+    axios.post(`${scenarioManagerHost}/ready`, {
+      ...req.body,
+      username,
+    });
   res.sendStatus(200);
 });
 
@@ -132,5 +182,5 @@ io.on("connection", (conn) => {
 
 httpServer.listen(port, () => {
   console.log(`Scenario Manager: ${scenarioManagerHost}`);
-  console.log(`browser-speech app listening at http://localhost:${port}`);
+  console.log(`browser-speech app listening at ${backendHost}:${port}`);
 });
