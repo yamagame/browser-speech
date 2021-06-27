@@ -523,6 +523,7 @@ export const Core = function (DORA, config = {}) {
       if (isTemplated) {
         message = utils.mustache.render(message, msg);
       }
+      delete msg.slot;
       delete msg.match;
       const params: {
         speed?;

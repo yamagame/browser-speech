@@ -85,7 +85,10 @@ const getSlot = (msg, options, isTemplated = false) => {
       })
       .filter((item) => item != null);
     msg.nlp.slot[slot] = [...msg.nlp.slot[slot], ...foundMatch];
-    if (foundMatch.length > 0) msg.match = foundMatch[0].slot;
+    if (foundMatch.length > 0) {
+      msg.match = foundMatch[0].match;
+      msg.slot = foundMatch[0].slot;
+    }
   }
   return msg;
 };
