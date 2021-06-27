@@ -141,29 +141,33 @@ export const processRecognition = async ({
   setStartRecognition: (value: StartRecoginitionProps) => void;
 }) => {
   if (speechRecognition !== undefined) {
-    console.log(startRecognition);
     if (startRecognition.state) {
       const { timeout } = startRecognition;
       await axios.post("/recognition", { state: "start" });
+      let recordingTranscript = true;
       let doneTranscript = false;
-      console.log(timeout);
       const timeoutTimer =
         timeout &&
         setTimeout(() => {
           if (!doneTranscript) {
             speechRecognition.stop();
           }
+          recordingTranscript = false;
         }, timeout * 1000);
-      console.log(timeoutTimer);
       speechRecognition.onresult = async (e) => {
+        recordingTranscript = false;
+        doneTranscript = true;
         setResult(e.results[0][0].transcript);
         // 認識結果を送信
         await axios.post("/transcript", {
           transcript: e.results[0][0].transcript,
         });
-        doneTranscript = true;
       };
       speechRecognition.onend = async () => {
+        if (recordingTranscript) {
+          speechRecognition.start();
+          return;
+        }
         if (timeoutTimer) clearTimeout(timeoutTimer);
         setStartRecognition({ state: false });
         // 音声認識終了通知
