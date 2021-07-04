@@ -24,7 +24,9 @@ const slotPattern = {
   はさみ: [/(はさみ)/],
   タバコ: [/(タバコ)/, /(たばこ)/],
   ボールペン: [/(ボールペン)/],
-  場所: [...building, ...structure, ...hospital, ...house],
+  場所: [...building, ...structure, ...hospital, ...house].sort((a, b) => {
+    return b.length - a.length;
+  }),
   野菜: [...vegetables],
 };
 
