@@ -582,6 +582,9 @@ export const Core = function (DORA, config = {}) {
         }
         msg.payload += message;
         node.send(msg);
+      } else if (message === "") {
+        msg.payload = message;
+        node.send(msg);
       } else {
         socket.emit(
           "text-to-speech",

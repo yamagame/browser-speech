@@ -20,7 +20,7 @@ const slotPattern = {
   "２８６": [/(286)/],
   "９２５３": [/(9253)/],
   時計: [/(時計)/, /(OK)/, /(おけい)/],
-  くし: [/(くし)/, /(福祉)/, /(牛)/],
+  くし: [/(くし)/, /(福祉)/, /(牛)/, /(節)/],
   はさみ: [/(はさみ)/],
   タバコ: [/(タバコ)/, /(たばこ)/],
   ボールペン: [/(ボールペン)/],
@@ -154,18 +154,18 @@ export const Nlp = function (DORA, config = {}) {
         message = utils.mustache.render(message, msg);
       }
       if (
-        !Object.keys(msg.nlp.slot).some((key) => {
+        Object.keys(msg.nlp.slot).some((key) => {
           return msg.nlp.slot[key].length <= 0;
         })
       ) {
-        msg.nlp.store[message] = msg.nlp.slot;
-        msg.nlp.slot = {};
-        if (params.length > 1) {
-          node.jump(msg);
-          return;
-        }
+        node.next(msg);
+        return;
       }
-      node.next(msg);
+      msg.nlp.store[message] = msg.nlp.slot;
+      msg.nlp.slot = {};
+      if (params.length > 1) {
+        node.jump(msg);
+      }
     });
   }
   DORA.registerType("store", Store);
