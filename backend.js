@@ -44,6 +44,7 @@ app.use(express.static("front"));
 
 app.use((req, res, next) => {
   console.log(req.path);
+  console.log(new Date());
   console.log(JSON.stringify(req.body, null, "  "));
   next();
 });
