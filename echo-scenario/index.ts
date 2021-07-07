@@ -5,12 +5,14 @@ const backendHost = process.env.BACKEND_HOST || null;
 const scenarioHost = process.env.SCENARIO_HOST || "http://localhost";
 const scenarioDir =
   process.env.SCENARIO_DIR || path.join(__dirname, "scenario");
+const commandDir = process.env.COMMAND_DIR || path.join(__dirname, "command");
 
 const { DoraEngine } = require("modules/DoraEngine");
 const robot = new DoraEngine({
   scenarioDir,
   backendHost,
   scenarioHost: `${scenarioHost}:${port}`,
+  commandDir,
 });
 
 const app = express();
@@ -22,6 +24,7 @@ app.use(express.static("public"));
 
 app.use((req, res, next) => {
   console.log(req.path);
+  console.log(new Date());
   console.log(JSON.stringify(req.body, null, "  "));
   next();
 });

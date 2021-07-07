@@ -1,13 +1,44 @@
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
+const { spawn } = require("child_process");
 import { EventEmitter } from "events";
 import { Dora, Node } from "./dora";
+
+const psTree = require("ps-tree");
+
+function kill(pid, signal, callback) {
+  signal = signal || "SIGKILL";
+  callback = callback || function () {};
+  var killTree = true;
+  if (killTree) {
+    psTree(pid, function (err, children) {
+      [pid]
+        .concat(
+          children.map(function (p) {
+            return p.PID;
+          })
+        )
+        .forEach(function (tpid) {
+          try {
+            process.kill(tpid, signal);
+          } catch (ex) {}
+        });
+      callback();
+    });
+  } else {
+    try {
+      process.kill(pid, signal);
+    } catch (ex) {}
+    callback();
+  }
+}
 
 export type DoraEngineProps = {
   scenarioDir: string;
   backendHost: string;
   scenarioHost: string;
+  commandDir: string;
 };
 
 type Robot = {
@@ -21,8 +52,10 @@ export class DoraEngine {
     scenarioDir: "",
     backendHost: "",
     scenarioHost: "",
+    commandDir: "",
   };
   robots: { [index: string]: Robot } = {};
+  playsnd = {};
 
   constructor(options: DoraEngineProps) {
     this.options = { ...this.options, ...options };
@@ -32,26 +65,49 @@ export class DoraEngine {
     const scenarioPath = (filename) =>
       path.join(this.options.scenarioDir, filename);
 
-    const { backendHost, scenarioHost } = this.options;
+    const { backendHost, scenarioHost, commandDir } = this.options;
 
     const socket = new EventEmitter();
     socket.addListener("text-to-speech", async (payload, callback) => {
-      const { params } = payload;
-      if (backendHost) {
-        await axios.post(`${backendHost}/text-to-speech`, {
-          utterance: params.message,
-          username,
-        });
+      const { message, action } = payload.params as {
+        message: string;
+        action: "play" | "stop";
+      };
+      if (action === "play") {
+        if (backendHost) {
+          await axios.post(`${backendHost}/text-to-speech/start`, {
+            utterance: message,
+            username,
+          });
+        }
+      }
+      if (action === "stop") {
+        if (backendHost) {
+          await axios.post(`${backendHost}/text-to-speech/stop`, {
+            utterance: message,
+            username,
+          });
+        }
       }
       this.robots[username].next = callback;
     });
     socket.addListener("speech-to-text", async (payload, callback) => {
-      const { timeout } = payload.params;
-      if (backendHost) {
-        await axios.post(`${backendHost}/speech-to-text/start`, {
-          username,
-          timeout,
-        });
+      const { timeout, action } = payload.params;
+      if (action === "play") {
+        if (backendHost) {
+          await axios.post(`${backendHost}/speech-to-text/start`, {
+            username,
+            timeout,
+          });
+        }
+      }
+      if (action === "stop") {
+        if (backendHost) {
+          await axios.post(`${backendHost}/speech-to-text/stop`, {
+            username,
+            timeout,
+          });
+        }
       }
       this.robots[username].next = callback;
     });
@@ -64,6 +120,48 @@ export class DoraEngine {
         });
       }
       this.robots[username].next = callback;
+    });
+    socket.addListener("sound", async (payload, callback) => {
+      const { sound, action } = payload.params as {
+        sound: string;
+        action: "play.async" | "play.sync" | "stop";
+      };
+      // サウンド停止
+      if (action === "stop") {
+        const pids = Object.keys(this.playsnd);
+        const _playsnd = this.playsnd;
+        let count = pids.length;
+        if (count > 0) {
+          this.playsnd = {};
+          pids.forEach((pid) => {
+            const playone = _playsnd[pid].playone;
+            if (playone) {
+              kill(playone.pid, "SIGTERM", function () {
+                count--;
+                if (count <= 0) {
+                  if (callback) callback();
+                }
+              });
+            }
+          });
+        } else {
+          if (callback) callback();
+        }
+        return;
+      }
+      // サウンド再生
+      const cmd = process.platform === "darwin" ? "afplay.sh" : "aplay.sh";
+      const playone = spawn(path.join(commandDir, cmd), [scenarioPath(sound)]);
+      playone.on("close", () => {
+        delete this.playsnd[playone.pid];
+        if (action === "play.sync") {
+          if (callback) callback();
+        }
+      });
+      this.playsnd[playone.pid] = { playone, sound };
+      if (action !== "play.async") {
+        if (callback) callback();
+      }
     });
 
     const dora = new Dora();

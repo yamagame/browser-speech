@@ -258,7 +258,7 @@ export const Core = function (DORA, config = {}) {
    *
    *
    */
-  function Sound(type) {
+  function Sound(action: "play.async" | "play.sync" | "stop") {
     return function (node: Node, options) {
       const isTemplated = (options || "").indexOf("{{") != -1;
       node.on("input", async function (msg) {
@@ -272,7 +272,7 @@ export const Core = function (DORA, config = {}) {
           {
             msg,
             params: {
-              type,
+              action,
               sound: message,
               ...this.credential(),
             },
@@ -286,8 +286,9 @@ export const Core = function (DORA, config = {}) {
       });
     };
   }
-  DORA.registerType("sound", Sound("sound"));
-  DORA.registerType("sound.sync", Sound("sound.sync"));
+  DORA.registerType("sound", Sound("play.sync"));
+  DORA.registerType("sound.sync", Sound("play.sync"));
+  DORA.registerType("sound.stop", Sound("stop"));
 
   /*
    *
@@ -591,6 +592,7 @@ export const Core = function (DORA, config = {}) {
           {
             msg,
             params: {
+              action: "play",
               message,
               ...params,
               ...this.credential(),
@@ -657,6 +659,7 @@ export const Core = function (DORA, config = {}) {
         {
           msg,
           params: {
+            action: "play",
             ...params,
             ...this.credential(),
           },
@@ -739,6 +742,7 @@ export const Core = function (DORA, config = {}) {
         {
           msg,
           params: {
+            action: "play",
             ...params,
             ...this.credential(),
           },
@@ -800,14 +804,15 @@ export const Core = function (DORA, config = {}) {
    *
    *
    */
-  function StopSpeech(node: Node, options) {
+  function SpeechStop(node: Node, options) {
     node.on("input", function (msg) {
       const { socket } = node.flow.options;
       socket.emit(
-        "stop-speech",
+        "text-to-speech",
         {
           msg,
           params: {
+            action: "stop",
             ...this.credential(),
           },
           node,
@@ -819,7 +824,7 @@ export const Core = function (DORA, config = {}) {
       );
     });
   }
-  DORA.registerType("stop-speech", StopSpeech);
+  DORA.registerType("speech.stop", SpeechStop);
 
   /*
    *
@@ -834,10 +839,11 @@ export const Core = function (DORA, config = {}) {
         option = utils.mustache.render(option, msg);
       }
       socket.emit(
-        "stop-speech",
+        "text-to-speech",
         {
           msg,
           params: {
+            action: "stop",
             ...this.credential(),
             option,
           },
