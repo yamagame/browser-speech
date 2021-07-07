@@ -165,6 +165,8 @@ export const Nlp = function (DORA, config = {}) {
       msg.nlp.slot = {};
       if (params.length > 1) {
         node.jump(msg);
+      } else {
+        node.next(msg);
       }
     });
   }
