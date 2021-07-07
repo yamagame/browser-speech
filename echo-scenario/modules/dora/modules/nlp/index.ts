@@ -2,6 +2,7 @@ import { Node } from "../../";
 const utils = require("../../libs/utils");
 const fetch = require("node-fetch");
 const { vegetables, building, structure, hospital, house } = require("./words");
+const { TextKan2Num } = require("./kan2num");
 
 const slotPattern = {
   名前: [/(山口)/, /(須崎)/, /(新海)/, /(小出)/, /(沼尾)/],
@@ -31,6 +32,9 @@ const slotPattern = {
 };
 
 const convertMatchString = (transcript, re, slot) => {
+  if (slot === "歳") {
+    transcript = TextKan2Num(transcript);
+  }
   if (typeof re === "string") {
     const index = transcript.indexOf(re);
     if (index >= 0) {
