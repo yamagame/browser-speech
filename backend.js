@@ -97,11 +97,22 @@ app.post("/display/image", (req, res) => {
 });
 
 // echo-server -> browser
-app.post("/text-to-speech", (req, res) => {
+app.post("/text-to-speech/start", (req, res) => {
   const { username } = req.body;
   broadcast({
     ...req.body,
-    action: "text-to-speech",
+    action: "text-to-speech/start",
+    username,
+  });
+  res.sendStatus(200);
+});
+
+// echo-server -> browser
+app.post("/text-to-speech/stop", (req, res) => {
+  const { username } = req.body;
+  broadcast({
+    ...req.body,
+    action: "text-to-speech/stop",
     username,
   });
   res.sendStatus(200);

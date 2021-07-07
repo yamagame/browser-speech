@@ -1,6 +1,10 @@
-interface ControlMessageTextToSpeech {
-  action: "text-to-speech";
+interface ControlMessageTextToSpeechStart {
+  action: "text-to-speech/start";
   utterance: string;
+}
+
+interface ControlMessageTextToSpeechStop {
+  action: "text-to-speech/stop";
 }
 
 interface ControlMessageSpeechToTextStart {
@@ -29,7 +33,8 @@ interface ControlMessageExit {
 }
 
 export type ControlMessage =
-  | ControlMessageTextToSpeech
+  | ControlMessageTextToSpeechStart
+  | ControlMessageTextToSpeechStop
   | ControlMessageSpeechToTextStart
   | ControlMessageSpeechToTextStop
   | ControlMessageImage

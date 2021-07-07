@@ -95,10 +95,17 @@ export const processControl = ({
   const onmessage = async (e: MessageEvent) => {
     const data = JSON.parse(e.data) as ControlMessage;
     switch (data.action) {
-      case "text-to-speech":
+      case "text-to-speech/start":
         setResult(data.utterance);
         await speechSynthesis(data.utterance);
         await axios.post("/ready");
+        break;
+      case "text-to-speech/stop":
+        if (synth.speaking) {
+          synth.cancel();
+        } else {
+          await axios.post("/ready");
+        }
         break;
       case "speech-to-text/start":
         setStartRecognition({ state: true, timeout: data.timeout });
