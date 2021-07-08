@@ -1,6 +1,5 @@
 import { Node } from "../../";
 const utils = require("../../libs/utils");
-const fetch = require("node-fetch");
 const { vegetables, building, structure, hospital, house } = require("./words");
 const { TextKan2Num } = require("./kan2num");
 
@@ -21,7 +20,7 @@ const slotPattern = {
   "２８６": [/(286)/],
   "９２５３": [/(9253)/],
   時計: [/(時計)/, /(OK)/, /(おけい)/],
-  くし: [/(くし)/, /(福祉)/, /(牛)/, /(節)/],
+  くし: [/(くし)/, /(福祉)/, /(牛)/, /(節)/, /(寿司)/],
   はさみ: [/(はさみ)/],
   タバコ: [/(タバコ)/, /(たばこ)/],
   ボールペン: [/(ボールペン)/],
