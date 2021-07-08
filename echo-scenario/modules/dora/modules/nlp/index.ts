@@ -90,8 +90,8 @@ const getSlot = (msg, options, isTemplated = false) => {
         return convertMatchString(msg.payload.toString(), re, slot);
       })
       .filter((item) => item != null);
-    msg.nlp.slot[slot] = [...msg.nlp.slot[slot], ...foundMatch];
     if (foundMatch.length > 0) {
+      msg.nlp.slot[slot] = [...msg.nlp.slot[slot], foundMatch[0]];
       msg.match = foundMatch[0].match;
       msg.slot = foundMatch[0].slot;
     }
@@ -140,10 +140,10 @@ export const Nlp = function (DORA, config = {}) {
   DORA.registerType("exist", Exist);
 
   /*
-   * /nlp.store/ストア名/:NEXT
+   * /nlp.check/ストア名/:NEXT
    * 全てのスロットが埋まっていれば保存してNEXTへ
    */
-  function Store(node: Node, options) {
+  function Check(node: Node, options) {
     const params = options.split("/");
     const string = params[0];
     const isTemplated = (string || "").indexOf("{{") != -1;
@@ -152,7 +152,6 @@ export const Nlp = function (DORA, config = {}) {
     }
     node.on("input", async function (msg) {
       prepare(msg);
-      console.log(JSON.stringify(msg.nlp.slot, null, "  "));
       let message = string;
       if (isTemplated) {
         message = utils.mustache.render(message, msg);
@@ -165,14 +164,44 @@ export const Nlp = function (DORA, config = {}) {
         node.next(msg);
         return;
       }
-      msg.nlp.store[message] = msg.nlp.slot;
-      msg.nlp.slot = {};
       if (params.length > 1) {
+        msg.nlp.store[message] = [
+          ...(msg.nlp.store[message] || []),
+          msg.nlp.slot,
+        ];
+        msg.nlp.slot = {};
         node.jump(msg);
       } else {
         node.next(msg);
       }
     });
   }
-  DORA.registerType("store", Store);
+  DORA.registerType("check", Check);
+
+  /*
+   * /nlp.save/ストア名
+   * スロットをストアへ保存
+   */
+  function Save(node: Node, options) {
+    const params = options.split("/");
+    const string = params[0];
+    const isTemplated = (string || "").indexOf("{{") != -1;
+    if (params.length > 1) {
+      node.nextLabel(params.slice(1).join("/"));
+    }
+    node.on("input", async function (msg) {
+      prepare(msg);
+      let message = string;
+      if (isTemplated) {
+        message = utils.mustache.render(message, msg);
+      }
+      msg.nlp.store[message] = [
+        ...(msg.nlp.store[message] || []),
+        msg.nlp.slot,
+      ];
+      msg.nlp.slot = {};
+      node.next(msg);
+    });
+  }
+  DORA.registerType("save", Save);
 };

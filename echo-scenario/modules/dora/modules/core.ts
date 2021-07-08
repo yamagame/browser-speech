@@ -1156,7 +1156,6 @@ export const Core = function (DORA, config = {}) {
    * /image/"img/picture.png"
    */
   function Image(node: Node, options) {
-    console.log(options);
     const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", async function (msg) {
       const { socket, host } = node.flow.options;

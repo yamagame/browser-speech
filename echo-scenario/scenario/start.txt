@@ -1,1 +1,3 @@
+//run/vegetable.txt
+//run/hasegawa.txt
 /run/welcome.txt

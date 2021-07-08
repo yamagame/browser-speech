@@ -5,7 +5,7 @@
 
 /if/[timeout]/:野菜-END
 /nlp.slot/野菜
-/nlp.store/野菜/:野菜です
+/nlp.check/野菜/:野菜です
 
 {{speechText}}は野菜ではありません。
 /goto.random/:野菜/:野菜/:野菜-Q

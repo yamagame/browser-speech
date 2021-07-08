@@ -6,7 +6,7 @@
 /timeout/15
 /speech-to-text
 /nlp.slot/名前
-/nlp.store/名前/:END-スタート
+/nlp.check/名前/:END-スタート
 /goto/:名前-開始
 
 :END-スタート
@@ -22,7 +22,9 @@
 /timeout/15
 /speech-to-text
 /nlp.slot/歳
-/nlp.store/年齢/:END-年齢
+/nlp.check/年齢/:END-年齢
+/nlp.save/年齢
+/delay/2s
 /goto/:年齢-開始
 
 :END-年齢
@@ -46,7 +48,7 @@
 /nlp.slot/月
 /nlp.slot/日
 /nlp.slot/曜日
-/nlp.store/日時の見当識/:日時の見当識-NEXT
+/nlp.check/日時の見当識/:日時の見当識-NEXT
 /nlp.exist/年/:日時の見当識-月
 今日は何年かわかりますか？
 /speech-to-text
@@ -62,16 +64,17 @@
 
 :日時の見当識-日
 /nlp.exist/日/:日時の見当識-曜日
-今日は何日かわかりますか？
+今日は何日ですか？
 /speech-to-text
 /nlp.slot/日/数字
 /goto/:日時の見当識-確認
 
 :日時の見当識-曜日
-今日は何曜日かわかりますか？
+今日は何曜日でしょう？
 /goto/:日時の見当識-開始
 
 :日時の見当識-NEXT
+/nlp.save/日時の見当識
 
 // ===================================================================
 :場所の見当識
@@ -85,14 +88,15 @@
 /speech-to-text
 /if/[timeout]/:場所の見当識-RETRY
 /nlp.slot/場所
-/nlp.store/場所の見当識/:場所の見当識-NEXT
+/nlp.check/場所の見当識/:場所の見当識-NEXT
 
 :場所の見当識-RETRY
 家ですか？病院ですか？施設ですか？
 /timeout/15
 /speech-to-text
 /nlp.slot/場所
-/nlp.store/場所の見当識/:場所の見当識-NEXT
+/nlp.check/場所の見当識/:場所の見当識-NEXT
+/nlp.save/場所の見当識
 
 :場所の見当識-NEXT
 
@@ -117,12 +121,16 @@
 
 
 電車
+
+
+はい、繰り返してください。
 /timeout/15
 /speech-to-text
 /nlp.slot/桜
 /nlp.slot/猫
 /nlp.slot/電車
-/nlp.store/言葉の即時記銘/:言葉の即時記銘-NEXT
+/nlp.check/言葉の即時記銘/:言葉の即時記銘-NEXT
+/nlp.save/言葉の即時記銘
 
 :言葉の即時記銘-NEXT
 
@@ -139,9 +147,11 @@
 /timeout/15
 /speech-to-text
 /nlp.slot/数字
-/nlp.store/計算1
+/nlp.check/計算1
+/nlp.save/計算1
 /.payload/{{match}}
 /switch/93/:計算2-NEXT
+/nlp.save/計算1
 /goto/:計算-NEXT
 
 :計算2-NEXT
@@ -149,7 +159,8 @@
 /timeout/15
 /speech-to-text
 /nlp.slot/数字
-/nlp.store/計算2
+/nlp.check/計算2
+/nlp.save/計算2
 :計算-NEXT
 
 // ===================================================================
@@ -170,7 +181,8 @@
 /timeout/15
 /speech-to-text
 /nlp.slot/２８６
-/nlp.store/２８６/:数字の逆唱2
+/nlp.check/数字の逆唱1/:数字の逆唱2
+/nlp.save/数字の逆唱1
 /goto/:数字の逆唱-NEXT
 
 :数字の逆唱2
@@ -186,9 +198,11 @@
 /timeout/15
 /speech-to-text
 /nlp.slot/９２５３
-/nlp.store/９２５３/:数字の逆唱-NEXT
+/nlp.check/数字の逆唱2/:数字の逆唱-NEXT
+/nlp.save/数字の逆唱2
 
 :数字の逆唱-NEXT
+はい
 
 // ===================================================================
 :言葉の遅延再生
@@ -196,7 +210,7 @@
 //自発的に答えられた 1つの言葉につき各2点
 //ヒント　a) 植物　b) 動物　c) 乗り物　を与えたら正解できた 1つの言葉につき各1点
 //不正解 0点
-先ほど覚えてもらった言葉をもう一度言ってみてください。
+それでは、先ほど覚えてもらった言葉をもう一度言ってみてください。
 
 :言葉の遅延再生-再認識
 /timeout/15
@@ -205,7 +219,7 @@
 /nlp.slot/桜
 /nlp.slot/猫
 /nlp.slot/電車
-/nlp.store/言葉の遅延再生/:言葉の遅延再生-NEXT
+/nlp.check/言葉の遅延再生/:言葉の遅延再生-NEXT
 /nlp.exist/桜/:言葉の遅延再生-繰り返し
 /nlp.exist/猫/:言葉の遅延再生-繰り返し
 /nlp.exist/電車/:言葉の遅延再生-繰り返し
@@ -227,7 +241,7 @@
 /nlp.slot/桜
 /nlp.slot/猫
 /nlp.slot/電車
-/nlp.store/言葉の遅延再生/:言葉の遅延再生-NEXT
+/nlp.check/言葉の遅延再生/:言葉の遅延再生-NEXT
 /nlp.exist/桜/:言葉の遅延再生-繰り返し2
 /nlp.exist/猫/:言葉の遅延再生-繰り返し2
 /nlp.exist/電車/:言葉の遅延再生-繰り返し2
@@ -253,6 +267,7 @@
 //2つ正解　2点
 //全問不正解 0点1つ正解　1点
 画面を見てください。
+/image/item6.png
 
 
 これから5つの品物を見せます。それを隠しますので何があったか言って下さい。
@@ -283,7 +298,7 @@
 /nlp.slot/はさみ
 /nlp.slot/タバコ
 /nlp.slot/ボールペン
-/nlp.store/物品記銘/:物品記銘-NEXT
+/nlp.check/物品記銘/:物品記銘-NEXT
 /nlp.exist/時計/:物品記銘-繰り返し
 /nlp.exist/くし/:物品記銘-繰り返し
 /nlp.exist/はさみ/:物品記銘-繰り返し
@@ -308,18 +323,18 @@
 //正答数ごとに右記点数 正答数10個以上　5点
 //正答数9個　4点
 //正答数8個　3点
-//正答数7個以上　2点
+//正答数7個以上　2点x
 //正答数6個以上　1点
 //正答数0～5個 0点
 知っている野菜の名前をできるだけ多く言ってください。
 :野菜
 /timeout/10
 /speech-to-text
-
 /if/[timeout]/:野菜-END
 /nlp.slot/野菜
-/nlp.store/野菜
-
+/nlp.check/言語の流暢性/:野菜-リトライ
+/nlp.save/言語の流暢性
+/goto/:野菜-Q
 :野菜-リトライ
 {{match}}
 /goto.random/:野菜/:野菜/:野菜/:野菜-Q
@@ -327,6 +342,7 @@
 他にありますか？
 /goto/:野菜
 :野菜-END
+/nlp.save/言語の流暢性
 
 これで長谷川式認知症診断を終わります。
 お疲れ様でした。
