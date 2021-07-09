@@ -38,6 +38,7 @@ const convertMatchString = (transcript, re, slot) => {
     const index = transcript.indexOf(re);
     if (index >= 0) {
       return {
+        date: new Date(),
         org: transcript,
         match: re,
         index,
@@ -49,6 +50,7 @@ const convertMatchString = (transcript, re, slot) => {
   const match = transcript.match(re);
   if (!match) return null;
   return {
+    date: new Date(),
     org: match[0],
     match: match[1],
     index: match.index,
