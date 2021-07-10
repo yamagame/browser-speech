@@ -1,30 +1,44 @@
 /image/title.png
+/nlp.startQuestion
 それでは、長谷川式認知症診断を始めます。
 
 :名前-開始
 あなたのお名前を教えてください
+/nlp.logger/{{payload}}
+
 /timeout/15
 /speech-to-text
+/if/[timeout]/:名前-タイムアウト
 /nlp.slot/名前
-/nlp.check/名前/:END-スタート
+/nlp.check/名前/:名前-復唱
 /goto/:名前-開始
 
-:END-スタート
+:名前-タイムアウト
+/goto/:名前-NEXT
+
+:名前-復唱
 こんにちは{{match}}さん
 
+:名前-NEXT
 // ===================================================================
 :年齢
 //１：年齢
 //2年までの誤差は正解
 //不正解　0点　正解　1点
 年齢を教えてください。お歳はいくつですか？
+/nlp.logger/{{payload}}
 :年齢-開始
 /timeout/15
 /speech-to-text
+/if/[timeout]/:年齢-タイムアウト
 /nlp.slot/歳
 /nlp.check/年齢/:END-年齢
 /nlp.save/年齢
 /delay/2s
+/goto/:年齢-開始
+
+:年齢-タイムアウト
+お歳はいくつですか？
 /goto/:年齢-開始
 
 :END-年齢
@@ -40,6 +54,7 @@
 //曜日　　不正解　0点　正解　1点
 
 今日は何年の何月何日、何曜日ですか？
+/nlp.logger/{{payload}}
 :日時の見当識-開始
 /timeout/15
 /speech-to-text
@@ -50,14 +65,14 @@
 /nlp.slot/曜日
 /nlp.check/日時の見当識/:日時の見当識-NEXT
 /nlp.exist/年/:日時の見当識-月
-今日は何年かわかりますか？
+今年は何年かわかりますか？
 /speech-to-text
 /nlp.slot/年/数字
 /goto/:日時の見当識-確認
 
 :日時の見当識-月
 /nlp.exist/月/:日時の見当識-日
-今日は何月かわかりますか？
+今日は何月でしょう？
 /speech-to-text
 /nlp.slot/月/数字
 /goto/:日時の見当識-確認
@@ -84,6 +99,7 @@
 //不正解 0点
 
 私たちが今いるところはどこですか？
+/nlp.logger/{{payload}}
 /timeout/5
 /speech-to-text
 /if/[timeout]/:場所の見当識-RETRY
@@ -110,6 +126,7 @@
 //2つ正解　2点
 //不正解 0点　　1つ正解　1点
 これから言う3つの言葉を言ってみてください。
+/nlp.logger/{{payload}}
 
 あとの設問でまた聞きますので、よく覚えておいてください。
 
@@ -144,6 +161,7 @@
 100から7を順番に引いてください。
 
 100から7を引くといくつですか？
+/nlp.logger/{{payload}}
 /timeout/15
 /speech-to-text
 /nlp.slot/数字
@@ -156,6 +174,7 @@
 
 :計算2-NEXT
 それから7を引くといくつですか？
+/nlp.logger/{{payload}}
 /timeout/15
 /speech-to-text
 /nlp.slot/数字
@@ -172,6 +191,7 @@
 //不正解　0点　　正解（2－8－6） 1点
 //不正解　0点　　正解（9－2－5－3）1点
 これから言う数字を逆から言ってください。
+/nlp.logger/{{payload}}
 
 6
 
@@ -187,6 +207,7 @@
 
 :数字の逆唱2
 これから言う数字も逆から言ってみてください。
+/nlp.logger/{{payload}}
 
 ３
 
@@ -211,6 +232,7 @@
 //ヒント　a) 植物　b) 動物　c) 乗り物　を与えたら正解できた 1つの言葉につき各1点
 //不正解 0点
 それでは、先ほど覚えてもらった言葉をもう一度言ってみてください。
+/nlp.logger/{{payload}}
 
 :言葉の遅延再生-再認識
 /timeout/15
@@ -271,6 +293,7 @@
 
 
 これから5つの品物を見せます。それを隠しますので何があったか言って下さい。
+/nlp.logger/{{payload}}
 
 一つ目はこれです。
 /image/item1.png
@@ -327,6 +350,7 @@
 //正答数6個以上　1点
 //正答数0～5個 0点
 知っている野菜の名前をできるだけ多く言ってください。
+/nlp.logger/{{payload}}
 :野菜
 /timeout/10
 /speech-to-text
@@ -346,3 +370,4 @@
 
 これで長谷川式認知症診断を終わります。
 お疲れ様でした。
+/nlp.endQuestion

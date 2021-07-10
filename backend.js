@@ -181,6 +181,10 @@ app.post("/ready", (req, res) => {
   res.sendStatus(200);
 });
 
+app.post("/logger", (req, res) => {
+  res.sendStatus(200);
+});
+
 io.installHandlers(httpServer, { prefix: "/controller" });
 
 io.on("connection", (conn) => {

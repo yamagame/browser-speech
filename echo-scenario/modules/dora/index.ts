@@ -19,6 +19,7 @@ const modules = [];
 export type DoraPlayProps = {
   socket: EventEmitter;
   host: string;
+  loggerHost?: string;
   range: {
     start: number;
     end?: number;

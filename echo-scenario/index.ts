@@ -6,12 +6,14 @@ const scenarioHost = process.env.SCENARIO_HOST || "http://localhost";
 const scenarioDir =
   process.env.SCENARIO_DIR || path.join(__dirname, "scenario");
 const commandDir = process.env.COMMAND_DIR || path.join(__dirname, "command");
+const loggerHost = process.env.LOGGER_HOST || null;
 
 const { DoraEngine } = require("modules/DoraEngine");
 const robot = new DoraEngine({
   scenarioDir,
   backendHost,
   scenarioHost: `${scenarioHost}:${port}`,
+  loggerHost,
   commandDir,
 });
 

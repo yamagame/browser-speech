@@ -39,6 +39,7 @@ export type DoraEngineProps = {
   backendHost: string;
   scenarioHost: string;
   commandDir: string;
+  loggerHost: string;
 };
 
 type Robot = {
@@ -53,6 +54,7 @@ export class DoraEngine {
     backendHost: "",
     scenarioHost: "",
     commandDir: "",
+    loggerHost: "",
   };
   robots: { [index: string]: Robot } = {};
   playsnd = {};
@@ -65,7 +67,7 @@ export class DoraEngine {
     const scenarioPath = (filename) =>
       path.join(this.options.scenarioDir, filename);
 
-    const { backendHost, scenarioHost, commandDir } = this.options;
+    const { backendHost, scenarioHost, commandDir, loggerHost } = this.options;
 
     const socket = new EventEmitter();
     socket.addListener("text-to-speech", async (payload, callback) => {
@@ -201,6 +203,7 @@ export class DoraEngine {
           {
             socket,
             host: scenarioHost,
+            loggerHost,
             range,
             defaults,
           },

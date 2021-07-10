@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "tsc -w -p tsconfig.json & COMMAND_DIR=`pwd`/command SCENARIO_DIR=`pwd`/scenario BACKEND_HOST=http://localhost:4100 NODE_PATH=./dist nodemon --config nodemon.json",
+    "start": "tsc -w -p tsconfig.json & COMMAND_DIR=`pwd`/command SCENARIO_DIR=`pwd`/scenario LOGGER_HOST=http://localhost:4100/logger BACKEND_HOST=http://localhost:4100 NODE_PATH=./dist nodemon --config nodemon.json",
     "build": "webpack",
     "test": "NODE_PATH=dist jest"
   },

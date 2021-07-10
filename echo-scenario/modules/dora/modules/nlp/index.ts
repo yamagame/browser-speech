@@ -1,3 +1,4 @@
+const fetch = require("node-fetch");
 import { Node } from "../../";
 const utils = require("../../libs/utils");
 const { vegetables, building, structure, hospital, house } = require("./words");
@@ -108,6 +109,97 @@ const getSlot = (msg, options, isTemplated = false) => {
 };
 
 export const Nlp = function (DORA, config = {}) {
+  /*
+   * /nlp.startQuestion
+   * 診断開始
+   */
+  function StartQuestion(node: Node, options) {
+    const isTemplated = (options || "").indexOf("{{") != -1;
+    node.on("input", async function (msg) {
+      prepare(msg);
+      node.next(msg);
+    });
+  }
+  DORA.registerType("startQuestion", StartQuestion);
+
+  /*
+   * /nlp.endQuestion
+   * 診断終了
+   */
+  function EndQuestion(node: Node, options) {
+    const isTemplated = (options || "").indexOf("{{") != -1;
+    node.on("input", async function (msg) {
+      prepare(msg);
+      node.next(msg);
+    });
+  }
+  DORA.registerType("endQuestion", EndQuestion);
+
+  /*
+   * /nlp.logger/質問文
+   * 診断終了
+   */
+  function Logger(node: Node, options) {
+    const isTemplated = (options || "").indexOf("{{") != -1;
+    node.on("input", async function (msg) {
+      const { loggerHost } = node.flow.options;
+      prepare(msg);
+      let message = options;
+      if (isTemplated) {
+        message = utils.mustache.render(message, msg);
+      }
+      if (loggerHost) {
+        const headers = {};
+        try {
+          headers["Content-Type"] = "application/json";
+          let response = await fetch(`${loggerHost}`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              payload: message,
+            }),
+            timeout: "httpTimeout" in msg ? msg.httpTimeout : 3000,
+          });
+          if (response.ok) {
+            const data = await response.text();
+            try {
+              msg.payload = JSON.parse(data);
+            } catch (err) {
+              msg.payload = data;
+            }
+          } else {
+            if (msg._httpErrorInterrupt && msg._httpErrorInterrupt.length > 0) {
+              msg.httpError = {
+                status: response.status,
+                statusText: response.statusText,
+              };
+              node.goto(msg, msg._httpErrorInterrupt);
+              return;
+            } else {
+              msg.httpError = {
+                status: response.status,
+                statusText: response.statusText,
+              };
+            }
+          }
+        } catch (err) {
+          msg.httpError = {
+            code: err.code,
+            type: err.type,
+            errno: err.errno,
+            message: err.message,
+          };
+          if (msg._httpErrorInterrupt && msg._httpErrorInterrupt.length > 0) {
+            node.goto(msg, msg._httpErrorInterrupt);
+            return;
+          }
+        }
+      }
+      node.next(msg);
+    });
+  }
+  DORA.registerType("logger", Logger);
+
   /*
    * /nlp.slot/キーワード
    * キーワードがpayloadに含まれていればスロットに入れる
