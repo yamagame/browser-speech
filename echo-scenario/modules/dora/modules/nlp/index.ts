@@ -2,9 +2,16 @@ import { Node } from "../../";
 const utils = require("../../libs/utils");
 const { vegetables, building, structure, hospital, house } = require("./words");
 const { TextKan2Num } = require("./kan2num");
+const { familyNames } = require("./names");
 
 const slotPattern = {
-  名前: [/(山口)/, /(須崎)/, /(新海)/, /(小出)/, /(沼尾)/],
+  名前: [
+    ...familyNames
+      .map((d) => d[1])
+      .sort((a, b) => {
+        return b.length - a.length;
+      }),
+  ],
   年: [/(\d+)年/],
   月: [/(\d+)月/],
   日: [/(\d+)日/],
