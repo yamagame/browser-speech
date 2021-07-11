@@ -21,14 +21,14 @@ const slotPattern = {
   曜日: [/([日月火水木金土])曜/],
   歳: [/(\d+)/],
   桜: [/(桜)/, /(さくら)/],
-  猫: [/(猫)/, /(ねこ)/],
+  猫: [/(猫)/, /(ねこ)/, "日光"],
   電車: [/(電車)/],
   梅: [/(梅)/],
   犬: [/(犬)/],
   自動車: [/(自動車)/],
   数字: [/(\d+)/],
   時計: [/(時計)/, /(OK)/, /(おけい)/],
-  くし: [/(くし)/, /(福祉)/, /(牛)/, /(節)/, /(寿司)/, /(串)/],
+  くし: ["くし", "福祉", "牛", "節", "寿司", "串", "櫛"],
   はさみ: [/(はさみ)/, "鋏", "ハサミ"],
   タバコ: [/(タバコ)/, /(たばこ)/],
   ボールペン: [/(ボールペン)/],
@@ -116,19 +116,25 @@ const getSlot = (msg, options, isTemplated = false) => {
   }
   if (slotPattern[slot]) pattern = [...pattern, ...slotPattern[slot]];
   if (pattern.length > 0) {
+    let payload = (msg.payload || "").toString();
     const foundMatch = pattern
       .map((re) => {
-        return convertMatchString(
-          (msg.payload || "").toString(),
-          re,
-          slot,
-          msg.timestamp
-        );
+        const result = convertMatchString(payload, re, slot, msg.timestamp);
+        if (result) {
+          payload = payload.replace(
+            result.match,
+            new Array(result.match.length).fill("*").join("")
+          );
+        }
+        return result;
       })
       .filter((item) => item != null);
     if (foundMatch.length > 0) {
-      msg.nlp.slot[slot] = [...msg.nlp.slot[slot], foundMatch[0]];
-      msg.match = foundMatch[0].match;
+      msg.nlp.slot[slot] = [...msg.nlp.slot[slot], ...foundMatch];
+      msg.match = foundMatch
+        .sort((a, b) => a.index - b.index)
+        .map((v) => v.match)
+        .join(",");
       msg.slot = foundMatch[0].slot;
     }
   }
