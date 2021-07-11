@@ -8,9 +8,9 @@ const { familyNames } = require("./names");
 const slotPattern = {
   名前: [
     ...familyNames
-      .map((d) => d[1])
+      .map((d) => d.slice(1))
       .sort((a, b) => {
-        return b.length - a.length;
+        return b[0].length - a[0].length;
       }),
   ],
   年: [/(\d+)年/],
@@ -41,6 +41,17 @@ const slotPattern = {
 const convertMatchString = (transcript, re, slot) => {
   if (slot === "歳") {
     transcript = TextKan2Num(transcript);
+  }
+  if (Array.isArray(re)) {
+    const match = re[0];
+    for (let i = 0; i < re.length; i++) {
+      const result = convertMatchString(transcript, re[i], slot);
+      if (result) {
+        result.match = match;
+        return result;
+      }
+    }
+    return null;
   }
   if (typeof re === "string") {
     const index = transcript.indexOf(re);
