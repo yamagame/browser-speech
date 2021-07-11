@@ -1,4 +1,3 @@
-/goto/:言語の流暢性
 /image/title.png
 /nlp.startQuestion
 それでは、長谷川式認知症診断を始めます。
