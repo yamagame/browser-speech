@@ -4,7 +4,7 @@ services:
     build:
       context: .
       args:
-        - "SCENARIO_MANAGER_HOST=http://echo-scenario:5200"
+        - "SCENARIO_MANAGER_HOST=http://scenario-engine:5200"
         - "PORT=4100"
     entrypoint:
       - node
@@ -14,16 +14,16 @@ services:
       - "${PWD}:/app"
     ports:
       - "4100:4100"
-  echo-scenario:
+  scenario-engine:
     build:
       context: .
-      dockerfile: echo-scenario/Dockerfile
+      dockerfile: scenario-engine/Dockerfile
       args:
         - "BACKEND_HOST=http://browser-speech:4100"
         - "PORT=5200"
     entrypoint:
       - node
-      - echo-scenario/index.js
+      - scenario-engine/index.js
     tty: true
     volumes:
       - "${PWD}:/app"

@@ -14,7 +14,7 @@ $ npm start
 ## エコーシナリオサーバの準備と実行
 
 ```
-$ cd echo-scenario
+$ cd scenario-engine
 $ npm install
 $ npm start
 ```

@@ -61,5 +61,5 @@ app.post("/transcript", async (req, res) => {
 app.listen(port, () => {
   console.log(`backendHost: ${backendHost}`);
   console.log(`scenarioDir: ${scenarioDir}`);
-  console.log(`echo-scenario app listening at ${scenarioHost}:${port}`);
+  console.log(`scenario-engine app listening at ${scenarioHost}:${port}`);
 });
