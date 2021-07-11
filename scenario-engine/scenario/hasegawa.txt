@@ -1,7 +1,8 @@
+/goto/:言語の流暢性
 /image/title.png
 /nlp.startQuestion
 それでは、長谷川式認知症診断を始めます。
-/.loop.名前繰り返し/3
+/.loop.名前-繰り返し/3
 :名前-開始
 あなたのお名前を教えてください
 /nlp.logger/{{payload}}
@@ -15,7 +16,7 @@
 /goto/:名前-認識
 
 :名前-タイムアウト
-/loop/.loop.名前繰り返し/:名前-再問い合わせ
+/loop/.loop.名前-繰り返し/:名前-再問い合わせ
 /goto/:名前-END
 
 :名前-再問い合わせ
@@ -24,8 +25,8 @@
 
 :名前-復唱
 こんにちは{{match}}さん
-
 :名前-END
+
 // ===================================================================
 :年齢
 //１：年齢
@@ -33,7 +34,7 @@
 //不正解　0点　正解　1点
 年齢を教えてください。お歳はいくつですか？
 /nlp.logger/{{payload}}
-/.loop.年齢繰り返し/3
+/.loop.年齢-繰り返し/3
 :年齢-開始
 /timeout/5
 /speech-to-text
@@ -45,7 +46,7 @@
 /goto/:年齢-開始
 
 :年齢-タイムアウト
-/loop/.loop.年齢繰り返し/:年齢-再問い合わせ
+/loop/.loop.年齢-繰り返し/:年齢-再問い合わせ
 /goto/:年齢-END
 
 :年齢-再問い合わせ
@@ -54,8 +55,8 @@
 
 :年齢-復唱
 {{match}}歳ですね。
-
 :年齢-END
+
 // ===================================================================
 :日時の見当識
 //２：日時の見当識
@@ -137,6 +138,7 @@
 //言葉ごとに各１点ずつ 3つ正解　3点
 //2つ正解　2点
 //不正解 0点　　1つ正解　1点
+/.loop.言葉の即時記銘-繰り返し/3
 これから言う3つの言葉を言ってみてください。
 /nlp.logger/{{payload}}
 
@@ -152,14 +154,16 @@
 電車
 
 
-はい、繰り返してください。
-/timeout/15
+はい、どうぞ。
+:言葉の即時記銘-再問い合わせ
+/timeout/10
 /speech-to-text
 /if/[timeout]/:言葉の即時記銘-NEXT
 /nlp.slot/桜
 /nlp.slot/猫
 /nlp.slot/電車
 /nlp.check/言葉の即時記銘/:言葉の即時記銘-NEXT
+/loop/.loop.言葉の即時記銘-繰り返し/:言葉の即時記銘-再問い合わせ
 /nlp.save/言葉の即時記銘
 
 :言葉の即時記銘-NEXT
@@ -204,39 +208,57 @@
 //不正解　0点　　正解（2－8－6） 1点
 //不正解　0点　　正解（9－2－5－3）1点
 これから言う数字を逆から言ってください。
+/.loop.数字の逆唱-繰り返し/3
+/nlp.clear.order
+/nlp.hasegawa.number
 /nlp.logger/{{payload}}
 
-6
+{{hasegawa.n1}}
 
-８
+{{hasegawa.n2}}
 
-２
-/timeout/15
+{{hasegawa.n3}}
+:数字の逆唱1-再問い合わせ
+/timeout/10
 /speech-to-text
-/nlp.slot/２８６
-/nlp.check/数字の逆唱1/:数字の逆唱2
+/if/[timeout]/:数字の逆唱-END
+/nlp.slot/{{hasegawa.n3}}
+/nlp.slot/{{hasegawa.n2}}
+/nlp.slot/{{hasegawa.n1}}
+/nlp.check.order/数字の逆唱1/:数字の逆唱2
+/loop/.loop.数字の逆唱-繰り返し/:数字の逆唱1-再問い合わせ
 /nlp.save/数字の逆唱1
 /goto/:数字の逆唱-NEXT
 
 :数字の逆唱2
 これから言う数字も逆から言ってみてください。
+/.loop.数字の逆唱-繰り返し/3
+/nlp.clear.order
+/nlp.hasegawa.number
 /nlp.logger/{{payload}}
 
-３
+{{hasegawa.n1}}
 
-５
+{{hasegawa.n2}}
 
-２
+{{hasegawa.n3}}
 
-９
-/timeout/15
+{{hasegawa.n4}}
+:数字の逆唱2-再問い合わせ
+/timeout/10
 /speech-to-text
-/nlp.slot/９２５３
-/nlp.check/数字の逆唱2/:数字の逆唱-NEXT
+/if/[timeout]/:数字の逆唱-END
+/nlp.slot/{{hasegawa.n4}}
+/nlp.slot/{{hasegawa.n3}}
+/nlp.slot/{{hasegawa.n2}}
+/nlp.slot/{{hasegawa.n1}}
+/nlp.check.order/数字の逆唱2/:数字の逆唱-NEXT
+/loop/.loop.数字の逆唱-繰り返し/:数字の逆唱2-再問い合わせ
 /nlp.save/数字の逆唱2
 
 :数字の逆唱-NEXT
-はい
+:数字の逆唱-END
+はい、それでは次の質問です。
 
 // ===================================================================
 :言葉の遅延再生
@@ -278,7 +300,6 @@
 /nlp.exist/桜/:言葉の遅延再生-復唱2
 /nlp.exist/猫/:言葉の遅延再生-復唱2
 /nlp.exist/電車/:言葉の遅延再生-復唱2
-
 
 /goto/:言葉の遅延再生-再認識2
 
@@ -347,7 +368,7 @@
 
 :物品記銘-NEXT
 /image/title.png
-それでは次の質問です。
+それでは、次の質問です。
 
 // ===================================================================
 :言語の流暢性
