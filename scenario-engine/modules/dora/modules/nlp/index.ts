@@ -272,6 +272,23 @@ export const Nlp = function (DORA, config = {}) {
           return msg.nlp.slot[key].length <= 0;
         })
       ) {
+        const existWords = [];
+        Object.keys(msg.nlp.slot).forEach((key) => {
+          if (msg.nlp.slot[key].length > 0) {
+            const lastItem = msg.nlp.slot[key][msg.nlp.slot[key].length - 1];
+            const index = msg.payload.indexOf(lastItem.match);
+            if (index >= 0) {
+              existWords.push({ ...lastItem, index });
+            }
+          }
+        });
+        const speechMatchWord = existWords
+          .sort((a, b) => a.index - b.index)
+          .map((item) => item.slot)
+          .join(",");
+        if (speechMatchWord) {
+          msg.slot = speechMatchWord;
+        }
         node.next(msg);
         return;
       }
