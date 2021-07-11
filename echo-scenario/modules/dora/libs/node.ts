@@ -111,4 +111,23 @@ export class Node extends Emitter {
       name: this.name,
     };
   }
+
+  getField(msg, field) {
+    console.log(field);
+    let index = field.length;
+    let object = msg;
+    do {
+      const key = field[field.length - index];
+      console.log(key);
+      if (index <= 1) {
+        if (object[key] !== null) {
+          return { key, object };
+        }
+        return null;
+      }
+      object = object[key];
+      index--;
+    } while (object);
+    return null;
+  }
 }

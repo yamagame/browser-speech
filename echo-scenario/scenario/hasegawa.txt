@@ -1,25 +1,32 @@
+/goto/:年齢
 /image/title.png
 /nlp.startQuestion
 それでは、長谷川式認知症診断を始めます。
-
+/.loop.名前繰り返し/3
 :名前-開始
 あなたのお名前を教えてください
 /nlp.logger/{{payload}}
-
-/timeout/15
+:名前-認識
+/timeout/5
 /speech-to-text
 /if/[timeout]/:名前-タイムアウト
 /nlp.slot/名前
 /nlp.check/名前/:名前-復唱
-/goto/:名前-開始
+/text-to-speech.random/お名前を言ってください。//
+/goto/:名前-認識
 
 :名前-タイムアウト
-/goto/:名前-NEXT
+/loop/.loop.名前繰り返し/:名前-再問い合わせ
+/goto/:名前-END
+
+:名前-再問い合わせ
+/text-to-speech.random/お名前を教えてください。/お名前を教えてくれますか？
+/goto/:名前-認識
 
 :名前-復唱
 こんにちは{{match}}さん
 
-:名前-NEXT
+:名前-END
 // ===================================================================
 :年齢
 //１：年齢
@@ -27,23 +34,29 @@
 //不正解　0点　正解　1点
 年齢を教えてください。お歳はいくつですか？
 /nlp.logger/{{payload}}
+/.loop.年齢繰り返し/3
 :年齢-開始
-/timeout/15
+/timeout/5
 /speech-to-text
 /if/[timeout]/:年齢-タイムアウト
 /nlp.slot/歳
-/nlp.check/年齢/:END-年齢
+/nlp.check/年齢/:年齢-復唱
 /nlp.save/年齢
 /delay/2s
 /goto/:年齢-開始
 
 :年齢-タイムアウト
-お歳はいくつですか？
+/loop/.loop.年齢繰り返し/:年齢-再問い合わせ
+/goto/:年齢-END
+
+:年齢-再問い合わせ
+/text-to-speech.random/お歳はいくつですか？/何歳ですか？
 /goto/:年齢-開始
 
-:END-年齢
+:年齢-復唱
 {{match}}歳ですね。
 
+:年齢-END
 // ===================================================================
 :日時の見当識
 //２：日時の見当識
@@ -358,12 +371,12 @@
 /nlp.slot/野菜
 /nlp.check/言語の流暢性/:野菜-リトライ
 /nlp.save/言語の流暢性
+
 /goto/:野菜-Q
 :野菜-リトライ
 {{match}}
-/goto.random/:野菜/:野菜/:野菜/:野菜-Q
 :野菜-Q
-他にありますか？
+/text-to-speech.random/他にありますか？///
 /goto/:野菜
 :野菜-END
 /nlp.save/言語の流暢性

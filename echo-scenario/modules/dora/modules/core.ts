@@ -1,6 +1,92 @@
 import { Node } from "../";
 const utils = require("../libs/utils");
 
+const EmitTextToSpeech = (node: Node, msg, message) => {
+  const { socket } = node.flow.options;
+  delete msg.slot;
+  delete msg.match;
+  const params: {
+    speed?;
+    volume?;
+    voice?;
+    languageCode?;
+    audioEncoding?;
+    ssmlGender?;
+    speakingRate?;
+    pitch?;
+    name?;
+    host?;
+    voiceId?;
+  } = {};
+  if (typeof msg.speech !== "undefined") {
+    //aquesTalk Pi向けパラメータ
+    if (typeof msg.speech.speed !== "undefined") {
+      params.speed = msg.speech.speed;
+    }
+    if (typeof msg.speech.volume !== "undefined") {
+      params.volume = msg.speech.volume;
+    }
+    if (typeof msg.speech.voice !== "undefined") {
+      params.voice = msg.speech.voice;
+    }
+    //google text-to-speech向けパラメータ
+    if (typeof msg.speech.languageCode !== "undefined") {
+      params.languageCode = msg.speech.languageCode;
+    }
+    if (typeof msg.speech.audioEncoding !== "undefined") {
+      params.audioEncoding = msg.speech.audioEncoding;
+    }
+    if (typeof msg.speech.gender !== "undefined") {
+      params.ssmlGender = msg.speech.gender;
+    }
+    if (typeof msg.speech.rate !== "undefined") {
+      params.speakingRate = msg.speech.rate;
+    }
+    if (typeof msg.speech.pitch !== "undefined") {
+      params.pitch = msg.speech.pitch;
+    }
+    if (typeof msg.speech.name !== "undefined") {
+      params.name = msg.speech.name;
+    }
+    if (typeof msg.speech.host !== "undefined") {
+      params.host = msg.speech.host;
+    }
+    //AWS Polly向けパラメータ
+    if (typeof msg.speech.voiceId !== "undefined") {
+      params.voiceId = msg.speech.voiceId;
+    }
+  }
+  if (msg.silence) {
+    if (msg.payload !== "") {
+      msg.payload += "\n";
+    }
+    msg.payload += message;
+    node.send(msg);
+  } else if (message === "") {
+    msg.payload = message;
+    node.send(msg);
+  } else {
+    socket.emit(
+      "text-to-speech",
+      {
+        msg,
+        params: {
+          action: "play",
+          message,
+          ...params,
+          ...node.credential(),
+        },
+        node,
+      },
+      (res) => {
+        if (!node.isAlive()) return;
+        msg.payload = message;
+        node.send(msg);
+      }
+    );
+  }
+};
+
 export const Core = function (DORA, config = {}) {
   /*
    *
@@ -167,7 +253,7 @@ export const Core = function (DORA, config = {}) {
       if (node._counter === 0) {
         node._randtable = node.wires
           .slice(0, node.wires.length - 1)
-          .map((v, i) => {
+          .map((_, i) => {
             return i;
           });
         for (var i = 0; i < node.wires.length * 3; i++) {
@@ -524,91 +610,43 @@ export const Core = function (DORA, config = {}) {
       if (isTemplated) {
         message = utils.mustache.render(message, msg);
       }
-      delete msg.slot;
-      delete msg.match;
-      const params: {
-        speed?;
-        volume?;
-        voice?;
-        languageCode?;
-        audioEncoding?;
-        ssmlGender?;
-        speakingRate?;
-        pitch?;
-        name?;
-        host?;
-        voiceId?;
-      } = {};
-      if (typeof msg.speech !== "undefined") {
-        //aquesTalk Pi向けパラメータ
-        if (typeof msg.speech.speed !== "undefined") {
-          params.speed = msg.speech.speed;
-        }
-        if (typeof msg.speech.volume !== "undefined") {
-          params.volume = msg.speech.volume;
-        }
-        if (typeof msg.speech.voice !== "undefined") {
-          params.voice = msg.speech.voice;
-        }
-        //google text-to-speech向けパラメータ
-        if (typeof msg.speech.languageCode !== "undefined") {
-          params.languageCode = msg.speech.languageCode;
-        }
-        if (typeof msg.speech.audioEncoding !== "undefined") {
-          params.audioEncoding = msg.speech.audioEncoding;
-        }
-        if (typeof msg.speech.gender !== "undefined") {
-          params.ssmlGender = msg.speech.gender;
-        }
-        if (typeof msg.speech.rate !== "undefined") {
-          params.speakingRate = msg.speech.rate;
-        }
-        if (typeof msg.speech.pitch !== "undefined") {
-          params.pitch = msg.speech.pitch;
-        }
-        if (typeof msg.speech.name !== "undefined") {
-          params.name = msg.speech.name;
-        }
-        if (typeof msg.speech.host !== "undefined") {
-          params.host = msg.speech.host;
-        }
-        //AWS Polly向けパラメータ
-        if (typeof msg.speech.voiceId !== "undefined") {
-          params.voiceId = msg.speech.voiceId;
-        }
-      }
-      if (msg.silence) {
-        if (msg.payload !== "") {
-          msg.payload += "\n";
-        }
-        msg.payload += message;
-        node.send(msg);
-      } else if (message === "") {
-        msg.payload = message;
-        node.send(msg);
-      } else {
-        socket.emit(
-          "text-to-speech",
-          {
-            msg,
-            params: {
-              action: "play",
-              message,
-              ...params,
-              ...this.credential(),
-            },
-            node,
-          },
-          (res) => {
-            if (!node.isAlive()) return;
-            msg.payload = message;
-            node.send(msg);
-          }
-        );
-      }
+      EmitTextToSpeech(node, msg, message);
     });
   }
   DORA.registerType("text-to-speech", TextToSpeech);
+
+  /*
+   * ランダムに発話
+   * /text-to-speech.random/こんにちは/ヤッホー/こんちわー
+   */
+  function SpeechRandom(node: Node, options) {
+    const isTemplated = (options || "").indexOf("{{") != -1;
+    node._counter = 0;
+    node.on("input", async function (msg) {
+      let message = options || "";
+      if (isTemplated) {
+        message = utils.mustache.render(message, msg);
+      }
+      const params = message.split("/");
+      if (node._counter === 0) {
+        node._randtable = new Array(params.length).fill(0).map((_, i) => i);
+        for (var i = 0; i < params.length * 3; i++) {
+          const a = utils.randInteger(0, params.length);
+          const b = utils.randInteger(0, params.length);
+          const c = node._randtable[a];
+          node._randtable[a] = node._randtable[b];
+          node._randtable[b] = c;
+        }
+      }
+      message = params[node._randtable[node._counter]];
+      node._counter++;
+      if (node._counter >= params.length) {
+        node._counter = 0;
+      }
+      EmitTextToSpeech(node, msg, message);
+    });
+  }
+  DORA.registerType("text-to-speech.random", SpeechRandom);
 
   /*
    *
@@ -1184,4 +1222,29 @@ export const Core = function (DORA, config = {}) {
     });
   }
   DORA.registerType("image", Image);
+
+  /*
+   *  /loop/.counter/:LOOP
+   *  カウンタが0になるまでLOOPへ
+   */
+  function Loop(node: Node, options) {
+    const params = options.split("/");
+    const field = params[0].split(".").filter((v) => v !== "");
+    if (params.length > 1) {
+      node.nextLabel(params.slice(1).join("/"));
+    }
+    node.on("input", async function (msg) {
+      const result = node.getField(msg, field);
+      if (result !== null) {
+        const { object, key } = result;
+        object[key] = parseInt(object[key]) - 1;
+        if (object[key] > 0) {
+          node.jump(msg);
+          return;
+        }
+      }
+      node.next(msg);
+    });
+  }
+  DORA.registerType("loop", Loop);
 };
