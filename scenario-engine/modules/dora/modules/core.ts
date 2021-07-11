@@ -88,6 +88,27 @@ const EmitTextToSpeech = (node: Node, msg, message) => {
 };
 
 export const Core = function (DORA, config = {}) {
+  /**
+   *  現在時刻を記録
+   *  /now
+   */
+  function Now(node, options) {
+    node.on("input", async function (msg) {
+      const now = new Date();
+      msg.now = {
+        year: now.getFullYear(),
+        month: now.getMonth() + 1,
+        date: now.getDate(),
+        hours: now.getHours(),
+        minutes: now.getMinutes(),
+        day: now.getDay(),
+      };
+      msg.timestamp = now;
+      node.send(msg);
+    });
+  }
+  DORA.registerType("now", Now);
+
   /*
    *
    *
@@ -704,6 +725,7 @@ export const Core = function (DORA, config = {}) {
           node,
         },
         (res) => {
+          msg.timestamp = new Date();
           if (!node.recording) return;
           if (!node.isAlive()) return;
           node.recording = false;
