@@ -5,6 +5,8 @@ const { vegetables, building, structure, hospital, house } = require("./words");
 const { TextKan2Num } = require("./kan2num");
 const { familyNames } = require("./names");
 
+const numberString = "０0１1２2３3４4５5６6７7８8９9";
+
 const slotPattern = {
   名前: [
     ...familyNames
@@ -25,11 +27,9 @@ const slotPattern = {
   犬: [/(犬)/],
   自動車: [/(自動車)/],
   数字: [/(\d+)/],
-  "２８６": [/(286)/],
-  "９２５３": [/(9253)/],
   時計: [/(時計)/, /(OK)/, /(おけい)/],
-  くし: [/(くし)/, /(福祉)/, /(牛)/, /(節)/, /(寿司)/],
-  はさみ: [/(はさみ)/],
+  くし: [/(くし)/, /(福祉)/, /(牛)/, /(節)/, /(寿司)/, /(串)/],
+  はさみ: [/(はさみ)/, "鋏", "ハサミ"],
   タバコ: [/(タバコ)/, /(たばこ)/],
   ボールペン: [/(ボールペン)/],
   場所: [...building, ...structure, ...hospital, ...house].sort((a, b) => {
@@ -38,14 +38,14 @@ const slotPattern = {
   野菜: [...vegetables],
 };
 
-const convertMatchString = (transcript, re, slot) => {
+const convertMatchString = (transcript, re, slot, date: Date) => {
   if (slot === "歳") {
     transcript = TextKan2Num(transcript);
   }
   if (Array.isArray(re)) {
     const match = re[0];
     for (let i = 0; i < re.length; i++) {
-      const result = convertMatchString(transcript, re[i], slot);
+      const result = convertMatchString(transcript, re[i], slot, date);
       if (result) {
         result.match = match;
         return result;
@@ -57,7 +57,7 @@ const convertMatchString = (transcript, re, slot) => {
     const index = transcript.indexOf(re);
     if (index >= 0) {
       return {
-        date: new Date(),
+        date,
         org: transcript,
         match: re,
         index,
@@ -69,7 +69,7 @@ const convertMatchString = (transcript, re, slot) => {
   const match = transcript.match(re);
   if (!match) return null;
   return {
-    date: new Date(),
+    date,
     org: match[0],
     match: match[1],
     index: match.index,
@@ -81,6 +81,7 @@ const prepare = (msg) => {
   if (!msg.nlp) msg.nlp = {};
   if (!msg.nlp.slot) msg.nlp.slot = {};
   if (!msg.nlp.store) msg.nlp.store = {};
+  if (!msg.nlp.order) msg.nlp.order = [];
 };
 
 const getSlot = (msg, options, isTemplated = false) => {
@@ -102,12 +103,27 @@ const getSlot = (msg, options, isTemplated = false) => {
   } catch (err) {
     slot = options;
   }
-  if (!msg.nlp.slot[slot]) msg.nlp.slot[slot] = [];
+  const numberIndex = Math.floor(numberString.indexOf(slot) / 2);
+  if (numberIndex >= 0) {
+    pattern = [
+      numberString[numberIndex * 2],
+      numberString[numberIndex * 2 + 1],
+    ];
+  }
+  if (!msg.nlp.slot[slot]) {
+    msg.nlp.slot[slot] = [];
+    msg.nlp.order.push(slot);
+  }
   if (slotPattern[slot]) pattern = [...pattern, ...slotPattern[slot]];
   if (pattern.length > 0) {
     const foundMatch = pattern
       .map((re) => {
-        return convertMatchString(msg.payload.toString(), re, slot);
+        return convertMatchString(
+          (msg.payload || "").toString(),
+          re,
+          slot,
+          msg.timestamp
+        );
       })
       .filter((item) => item != null);
     if (foundMatch.length > 0) {
@@ -254,57 +270,98 @@ export const Nlp = function (DORA, config = {}) {
    * /nlp.check/ストア名/:NEXT
    * 全てのスロットが埋まっていれば保存してNEXTへ
    */
-  function Check(node: Node, options) {
-    const params = options.split("/");
-    const string = params[0];
-    const isTemplated = (string || "").indexOf("{{") != -1;
-    if (params.length > 1) {
-      node.nextLabel(params.slice(1).join("/"));
-    }
-    node.on("input", async function (msg) {
-      prepare(msg);
-      let message = string;
-      if (isTemplated) {
-        message = utils.mustache.render(message, msg);
+  function Check(type: "check" | "check.order") {
+    return function (node: Node, options) {
+      const params = options.split("/");
+      const string = params[0];
+      const isTemplated = (string || "").indexOf("{{") != -1;
+      if (params.length > 1) {
+        node.nextLabel(params.slice(1).join("/"));
       }
-      if (
-        Object.keys(msg.nlp.slot).some((key) => {
-          return msg.nlp.slot[key].length <= 0;
-        })
-      ) {
+      node.on("input", async function (msg) {
+        prepare(msg);
+        let message = string;
+        if (isTemplated) {
+          message = utils.mustache.render(message, msg);
+        }
         const existWords = [];
         Object.keys(msg.nlp.slot).forEach((key) => {
           if (msg.nlp.slot[key].length > 0) {
             const lastItem = msg.nlp.slot[key][msg.nlp.slot[key].length - 1];
-            const index = msg.payload.indexOf(lastItem.match);
+            const index = (msg.payload || "").indexOf(lastItem.match);
             if (index >= 0) {
-              existWords.push({ ...lastItem, index });
+              existWords.push({
+                ...lastItem,
+                index,
+                time: new Date(lastItem.date).getTime(),
+              });
             }
           }
         });
-        const speechMatchWord = existWords
-          .sort((a, b) => a.index - b.index)
-          .map((item) => item.slot)
-          .join(",");
-        if (speechMatchWord) {
-          msg.slot = speechMatchWord;
+        const matchFail = () => {
+          const speechMatchWord = existWords
+            .sort((a, b) => a.index - b.index)
+            .map((item) => item.slot)
+            .join(",");
+          if (speechMatchWord) {
+            msg.slot = speechMatchWord;
+          }
+          node.next(msg);
+        };
+        if (
+          Object.keys(msg.nlp.slot).some((key) => {
+            return msg.nlp.slot[key].length <= 0;
+          })
+        ) {
+          matchFail();
+          return;
         }
-        node.next(msg);
-        return;
-      }
-      if (params.length > 1) {
-        msg.nlp.store[message] = [
-          ...(msg.nlp.store[message] || []),
-          msg.nlp.slot,
-        ];
-        msg.nlp.slot = {};
-        node.jump(msg);
-      } else {
-        node.next(msg);
-      }
+        if (type === "check.order") {
+          const v = existWords
+            .sort((a, b) => {
+              const d = a.time - b.time;
+              if (d === 0) {
+                return a.index - b.index;
+              }
+              return d;
+            })
+            .map((item) => item.slot)
+            .join("");
+          const t = msg.nlp.order.join("");
+          console.log(`${t} ${v}`);
+          if (v.indexOf(t) < 0) {
+            matchFail();
+            return;
+          }
+        }
+        if (params.length > 1) {
+          msg.nlp.store[message] = [
+            ...(msg.nlp.store[message] || []),
+            msg.nlp.slot,
+          ];
+          msg.nlp.slot = {};
+          node.jump(msg);
+        } else {
+          node.next(msg);
+        }
+      });
+    };
+  }
+  DORA.registerType("check", Check("check"));
+  DORA.registerType("check.order", Check("check.order"));
+
+  /*
+   * /nlp.clear.order
+   * 順序スロットをクリア
+   */
+  function ClearOrder(node: Node, options) {
+    node.on("input", async function (msg) {
+      prepare(msg);
+      msg.nlp.order = [];
+      node.next(msg);
     });
   }
-  DORA.registerType("check", Check);
+  DORA.registerType("clear.order", ClearOrder);
 
   /*
    * /nlp.save/ストア名
@@ -332,4 +389,30 @@ export const Nlp = function (DORA, config = {}) {
     });
   }
   DORA.registerType("save", Save);
+
+  /*
+   * /nlp.hasegawa.number
+   * 数字の逆唱問題の生成
+   */
+  function HasegwaNumber(node: Node, options) {
+    node.on("input", async function (msg) {
+      prepare(msg);
+      let values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+      const n1 = values[utils.randInteger(0, values.length)];
+      values = values.filter((v) => !(v >= n1 - 1 && v <= n1 + 1));
+      const n2 = values[utils.randInteger(0, values.length)];
+      values = values.filter((v) => !(v >= n2 - 1 && v <= n2 + 1));
+      const n3 = values[utils.randInteger(0, values.length)];
+      values = values.filter((v) => !(v >= n3 - 1 && v <= n3 + 1));
+      const n4 = values[utils.randInteger(0, values.length)];
+      msg.hasegawa = {
+        n1,
+        n2,
+        n3,
+        n4,
+      };
+      node.next(msg);
+    });
+  }
+  DORA.registerType("hasegawa.number", HasegwaNumber);
 };
