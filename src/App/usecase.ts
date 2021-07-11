@@ -185,7 +185,11 @@ export const processRecognition = async ({
         }
         await axios.post("/recognition", { state: "end" });
       };
-      speechRecognition.start();
+      try {
+        speechRecognition.start();
+      } catch (err) {
+        console.error(err);
+      }
     } else {
       speechRecognition.stop();
     }
