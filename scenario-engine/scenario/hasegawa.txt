@@ -4,11 +4,12 @@
 /.loop.名前-繰り返し/3
 :名前-開始
 あなたのお名前を教えてください
-/nlp.logger/{{payload}}
+/nlp.logger/質問：{{payload}}
 :名前-認識
 /timeout/5
 /speech-to-text
 /if/[timeout]/:名前-タイムアウト
+/nlp.logger/回答：{{payload}}
 /nlp.slot/名前
 /nlp.check/名前/:名前-復唱
 /text-to-speech.random/お名前を言ってください。//
@@ -32,12 +33,13 @@
 //2年までの誤差は正解
 //不正解　0点　正解　1点
 年齢を教えてください。お歳はいくつですか？
-/nlp.logger/{{payload}}
+/nlp.logger/質問：{{payload}}
 /.loop.年齢-繰り返し/3
 :年齢-開始
 /timeout/5
 /speech-to-text
 /if/[timeout]/:年齢-タイムアウト
+/nlp.logger/回答：{{payload}}
 /nlp.slot/歳
 /nlp.check/年齢/:年齢-復唱
 /nlp.save/年齢
@@ -66,10 +68,11 @@
 //曜日　　不正解　0点　正解　1点
 
 今日は何年の何月何日、何曜日ですか？
-/nlp.logger/{{payload}}
+/nlp.logger/質問：{{payload}}
 :日時の見当識-開始
 /timeout/15
 /speech-to-text
+/nlp.logger/回答：{{payload}}
 :日時の見当識-確認
 /nlp.slot/年
 /nlp.slot/月
@@ -78,26 +81,33 @@
 /nlp.check/日時の見当識/:日時の見当識-NEXT
 /nlp.exist/年/:日時の見当識-月
 今年は何年かわかりますか？
+/nlp.logger/質問：{{payload}}
 /speech-to-text
+/nlp.logger/回答：{{payload}}
 /nlp.slot/年/数字
 /goto/:日時の見当識-確認
 
 :日時の見当識-月
 /nlp.exist/月/:日時の見当識-日
 今日は何月でしょう？
+/nlp.logger/質問：{{payload}}
 /speech-to-text
+/nlp.logger/回答：{{payload}}
 /nlp.slot/月/数字
 /goto/:日時の見当識-確認
 
 :日時の見当識-日
 /nlp.exist/日/:日時の見当識-曜日
 今日は何日ですか？
+/nlp.logger/質問：{{payload}}
 /speech-to-text
+/nlp.logger/回答：{{payload}}
 /nlp.slot/日/数字
 /goto/:日時の見当識-確認
 
 :日時の見当識-曜日
 今日は何曜日でしょう？
+/nlp.logger/質問：{{payload}}
 /goto/:日時の見当識-開始
 
 :日時の見当識-NEXT
@@ -111,17 +121,20 @@
 //不正解 0点
 
 私たちが今いるところはどこですか？
-/nlp.logger/{{payload}}
+/nlp.logger/質問：{{payload}}
 /timeout/5
 /speech-to-text
 /if/[timeout]/:場所の見当識-RETRY
+/nlp.logger/回答：{{payload}}
 /nlp.slot/場所
 /nlp.check/場所の見当識/:場所の見当識-NEXT
 
 :場所の見当識-RETRY
 家ですか？病院ですか？施設ですか？
+/nlp.logger/質問：{{payload}}
 /timeout/15
 /speech-to-text
+/nlp.logger/回答：{{payload}}
 /nlp.slot/場所
 /nlp.check/場所の見当識/:場所の見当識-NEXT
 /nlp.save/場所の見当識
@@ -139,18 +152,19 @@
 //不正解 0点　　1つ正解　1点
 /.loop.言葉の即時記銘-繰り返し/3
 これから言う3つの言葉を言ってみてください。
-/nlp.logger/{{payload}}
+/nlp.hasegawa.keyword
+/nlp.logger/質問：{{payload}}「{{hasegawa.w1}}」「{{hasegawa.w2}}」「{{hasegawa.w3}}」
 
 あとの設問でまた聞きますので、よく覚えておいてください。
 
 
-桜
+{{hasegawa.w1}}
 
 
-猫
+{{hasegawa.w2}}
 
 
-電車
+{{hasegawa.w3}}
 
 
 はい、どうぞ。
@@ -158,9 +172,10 @@
 /timeout/10
 /speech-to-text
 /if/[timeout]/:言葉の即時記銘-NEXT
-/nlp.slot/桜
-/nlp.slot/猫
-/nlp.slot/電車
+/nlp.logger/回答：{{payload}}
+/nlp.slot/{{hasegawa.w1}}
+/nlp.slot/{{hasegawa.w2}}
+/nlp.slot/{{hasegawa.w3}}
 /nlp.check/言葉の即時記銘/:言葉の即時記銘-NEXT
 /loop/.loop.言葉の即時記銘-繰り返し/:言葉の即時記銘-再問い合わせ
 /nlp.save/言葉の即時記銘
@@ -177,9 +192,10 @@
 100から7を順番に引いてください。
 
 100から7を引くといくつですか？
-/nlp.logger/{{payload}}
+/nlp.logger/質問：{{payload}}
 /timeout/15
 /speech-to-text
+/nlp.logger/回答：{{payload}}
 /nlp.slot/数字
 /nlp.check/計算1
 /nlp.save/計算1
@@ -190,9 +206,10 @@
 
 :計算2-NEXT
 それから7を引くといくつですか？
-/nlp.logger/{{payload}}
+/nlp.logger/質問：{{payload}}
 /timeout/15
 /speech-to-text
+/nlp.logger/回答：{{payload}}
 /nlp.slot/数字
 /nlp.check/計算2
 /nlp.save/計算2
@@ -210,7 +227,7 @@
 /.loop.数字の逆唱-繰り返し/3
 /nlp.clear.order
 /nlp.hasegawa.number
-/nlp.logger/{{payload}}
+/nlp.logger/質問：{{payload}}「{{hasegawa.n1}}{{hasegawa.n2}}{{hasegawa.n3}}」
 
 {{hasegawa.n1}}
 
@@ -221,6 +238,7 @@
 /timeout/10
 /speech-to-text
 /if/[timeout]/:数字の逆唱-END
+/nlp.logger/回答：{{payload}}
 /nlp.slot/{{hasegawa.n3}}
 /nlp.slot/{{hasegawa.n2}}
 /nlp.slot/{{hasegawa.n1}}
@@ -234,7 +252,7 @@
 /.loop.数字の逆唱-繰り返し/3
 /nlp.clear.order
 /nlp.hasegawa.number
-/nlp.logger/{{payload}}
+/nlp.logger/質問：{{payload}}「{{hasegawa.n1}}、{{hasegawa.n2}}、{{hasegawa.n3}}、{{hasegawa.n4}}」
 
 {{hasegawa.n1}}
 
@@ -247,6 +265,7 @@
 /timeout/10
 /speech-to-text
 /if/[timeout]/:数字の逆唱-END
+/nlp.logger/回答：{{payload}}
 /nlp.slot/{{hasegawa.n4}}
 /nlp.slot/{{hasegawa.n3}}
 /nlp.slot/{{hasegawa.n2}}
@@ -266,19 +285,20 @@
 //ヒント　a) 植物　b) 動物　c) 乗り物　を与えたら正解できた 1つの言葉につき各1点
 //不正解 0点
 それでは、先ほど覚えてもらった言葉をもう一度言ってみてください。
-/nlp.logger/{{payload}}
+/nlp.logger/質問：{{payload}}「{{hasegawa.w1}}、{{hasegawa.w2}}、{{hasegawa.w3}}」
 
 :言葉の遅延再生-再認識
 /timeout/10
 /speech-to-text
 /if/[timeout]/:言葉の遅延再生-ヒント
-/nlp.slot/桜
-/nlp.slot/猫
-/nlp.slot/電車
+/nlp.logger/回答：{{payload}}
+/nlp.slot/{{hasegawa.w1}}
+/nlp.slot/{{hasegawa.w2}}
+/nlp.slot/{{hasegawa.w3}}
 /nlp.check/言葉の遅延再生/:言葉の遅延再生-NEXT
-/nlp.exist/桜/:言葉の遅延再生-復唱
-/nlp.exist/猫/:言葉の遅延再生-復唱
-/nlp.exist/電車/:言葉の遅延再生-復唱
+/nlp.exist/{{hasegawa.w1}}/:言葉の遅延再生-復唱
+/nlp.exist/{{hasegawa.w2}}/:言葉の遅延再生-復唱
+/nlp.exist/{{hasegawa.w3}}/:言葉の遅延再生-復唱
 /goto/:言葉の遅延再生-再認識
 
 :言葉の遅延再生-復唱
@@ -287,18 +307,20 @@
 
 :言葉の遅延再生-ヒント
 ヒントは、植物、動物、乗り物です。
+/nlp.logger/質問：{{payload}}
 
 :言葉の遅延再生-再認識2
 /timeout/10
 /speech-to-text
 /if/[timeout]/:言葉の遅延再生-NEXT
-/nlp.slot/桜
-/nlp.slot/猫
-/nlp.slot/電車
+/nlp.logger/回答：{{payload}}
+/nlp.slot/{{hasegawa.w1}}
+/nlp.slot/{{hasegawa.w2}}
+/nlp.slot/{{hasegawa.w3}}
 /nlp.check/言葉の遅延再生/:言葉の遅延再生-NEXT
-/nlp.exist/桜/:言葉の遅延再生-復唱2
-/nlp.exist/猫/:言葉の遅延再生-復唱2
-/nlp.exist/電車/:言葉の遅延再生-復唱2
+/nlp.exist/{{hasegawa.w1}}/:言葉の遅延再生-復唱2
+/nlp.exist/{{hasegawa.w2}}/:言葉の遅延再生-復唱2
+/nlp.exist/{{hasegawa.w3}}/:言葉の遅延再生-復唱2
 
 /goto/:言葉の遅延再生-再認識2
 
@@ -324,7 +346,7 @@
 
 
 これから5つの品物を見せます。それを隠しますので何があったか言って下さい。
-/nlp.logger/{{payload}}
+/nlp.logger/質問：{{payload}}
 
 一つ目はこれです。
 /image/item1.png
@@ -347,6 +369,7 @@
 /timeout/15
 /speech-to-text
 /if/[timeout]/:物品記銘-NEXT
+/nlp.logger/回答：{{payload}}
 /nlp.slot/時計
 /nlp.slot/くし
 /nlp.slot/はさみ
@@ -381,11 +404,12 @@
 //正答数6個以上　1点
 //正答数0～5個 0点
 知っている野菜の名前をできるだけ多く言ってください。
-/nlp.logger/{{payload}}
+/nlp.logger/質問：{{payload}}
 :野菜
 /timeout/10
 /speech-to-text
 /if/[timeout]/:野菜-END
+/nlp.logger/回答：{{payload}}
 /nlp.slot/野菜
 /nlp.check/言語の流暢性/:野菜-リトライ
 /nlp.save/言語の流暢性

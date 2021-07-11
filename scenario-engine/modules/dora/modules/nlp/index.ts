@@ -29,7 +29,7 @@ const slotPattern = {
   数字: [/(\d+)/],
   時計: [/(時計)/, /(OK)/, /(おけい)/],
   くし: ["くし", "福祉", "牛", "節", "寿司", "串", "櫛"],
-  はさみ: [/(はさみ)/, "鋏", "ハサミ"],
+  はさみ: [/(はさみ)/, "鋏", "ハサミ", "ささみ"],
   タバコ: [/(タバコ)/, /(たばこ)/],
   ボールペン: [/(ボールペン)/],
   場所: [...building, ...structure, ...hospital, ...house].sort((a, b) => {
@@ -194,12 +194,6 @@ export const Nlp = function (DORA, config = {}) {
             timeout: "httpTimeout" in msg ? msg.httpTimeout : 3000,
           });
           if (response.ok) {
-            const data = await response.text();
-            try {
-              msg.payload = JSON.parse(data);
-            } catch (err) {
-              msg.payload = data;
-            }
           } else {
             if (msg._httpErrorInterrupt && msg._httpErrorInterrupt.length > 0) {
               msg.httpError = {
@@ -291,19 +285,21 @@ export const Nlp = function (DORA, config = {}) {
           message = utils.mustache.render(message, msg);
         }
         const existWords = [];
-        Object.keys(msg.nlp.slot).forEach((key) => {
-          if (msg.nlp.slot[key].length > 0) {
-            const lastItem = msg.nlp.slot[key][msg.nlp.slot[key].length - 1];
-            const index = (msg.payload || "").indexOf(lastItem.match);
-            if (index >= 0) {
-              existWords.push({
-                ...lastItem,
-                index,
-                time: new Date(lastItem.date).getTime(),
-              });
+        Object.keys(msg.nlp.slot)
+          .filter((key) => key !== "")
+          .forEach((key) => {
+            if (msg.nlp.slot[key].length > 0) {
+              const lastItem = msg.nlp.slot[key][msg.nlp.slot[key].length - 1];
+              const index = (msg.payload || "").indexOf(lastItem.match);
+              if (index >= 0) {
+                existWords.push({
+                  ...lastItem,
+                  index,
+                  time: new Date(lastItem.date).getTime(),
+                });
+              }
             }
-          }
-        });
+          });
         const matchFail = () => {
           const speechMatchWord = existWords
             .sort((a, b) => a.index - b.index)
@@ -315,9 +311,11 @@ export const Nlp = function (DORA, config = {}) {
           node.next(msg);
         };
         if (
-          Object.keys(msg.nlp.slot).some((key) => {
-            return msg.nlp.slot[key].length <= 0;
-          })
+          Object.keys(msg.nlp.slot)
+            .filter((key) => key !== "")
+            .some((key) => {
+              return msg.nlp.slot[key].length <= 0;
+            })
         ) {
           matchFail();
           return;
@@ -334,7 +332,6 @@ export const Nlp = function (DORA, config = {}) {
             .map((item) => item.slot)
             .join("");
           const t = msg.nlp.order.join("");
-          console.log(`${t} ${v}`);
           if (v.indexOf(t) < 0) {
             matchFail();
             return;
@@ -412,6 +409,7 @@ export const Nlp = function (DORA, config = {}) {
       values = values.filter((v) => !(v >= n3 - 1 && v <= n3 + 1));
       const n4 = values[utils.randInteger(0, values.length)];
       msg.hasegawa = {
+        ...msg.hasegawa,
         n1,
         n2,
         n3,
@@ -421,4 +419,32 @@ export const Nlp = function (DORA, config = {}) {
     });
   }
   DORA.registerType("hasegawa.number", HasegwaNumber);
+
+  /*
+   * /nlp.hasegawa.keyword
+   * 言葉の即時記銘問題の生成
+   */
+  function HasegwaKeyword(node: Node, options) {
+    node.on("input", async function (msg) {
+      prepare(msg);
+      const n = utils.randInteger(0, 2);
+      if (n === 0) {
+        msg.hasegawa = {
+          ...msg.hasegawa,
+          w1: "桜",
+          w2: "猫",
+          w3: "電車",
+        };
+      } else {
+        msg.hasegawa = {
+          ...msg.hasegawa,
+          w1: "梅",
+          w2: "犬",
+          w3: "自動車",
+        };
+      }
+      node.next(msg);
+    });
+  }
+  DORA.registerType("hasegawa.keyword", HasegwaKeyword);
 };
