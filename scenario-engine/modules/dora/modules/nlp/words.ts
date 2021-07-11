@@ -602,6 +602,7 @@ export const vegetables = [
   "春菊",
   "ふきのとう",
   "ふき",
+  "ネギ",
 ].sort((a, b) => {
   return b.length - a.length;
 });
@@ -707,6 +708,7 @@ export const building = [
   "茅葺き",
   "賃貸",
   "リーバ・ハウス",
+  "家",
 ].sort((a, b) => {
   return b.length - a.length;
 });
