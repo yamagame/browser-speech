@@ -1,6 +1,22 @@
 import { Node } from "../";
 const utils = require("../libs/utils");
 
+function Add(node, msg, options, isTemplated, sign) {
+  let message = options;
+  if (isTemplated) {
+    message = utils.mustache.render(message, msg);
+  }
+  const params = message.split("/");
+  const field = params[0].split(".").filter((v) => v !== "");
+  const result = node.getField(msg, field);
+  if (result !== null) {
+    const { object, key } = result;
+    const value = Number(params[1] || 1);
+    object[key] = Number(object[key] || 0);
+    object[key] += sign * value;
+  }
+}
+
 const EmitTextToSpeech = (node: Node, msg, message) => {
   const { socket } = node.flow.options;
   delete msg.slot;
@@ -1269,4 +1285,40 @@ export const Core = function (DORA, config = {}) {
     });
   }
   DORA.registerType("loop", Loop);
+
+  /*
+   *  /add/.payload
+   *  /add/.payload/10
+   *  加算する
+   */
+  function OpAdd(node, options) {
+    var isTemplated = (options || "").indexOf("{{") != -1;
+    const params = options.split("/");
+    if (params.length > 0 && params[0][0] !== ".") {
+      throw new Error("パラメータがありません。");
+    }
+    node.on("input", async function (msg) {
+      Add(node, msg, options, isTemplated, 1);
+      node.next(msg);
+    });
+  }
+  DORA.registerType("add", OpAdd);
+
+  /*
+   *  /sub/.payload
+   *  /sub/.payload/10
+   *  減算する
+   */
+  function OpSub(node, options) {
+    var isTemplated = (options || "").indexOf("{{") != -1;
+    const params = options.split("/");
+    if (params.length > 0 && params[0][0] !== ".") {
+      throw new Error("パラメータがありません。");
+    }
+    node.on("input", async function (msg) {
+      Add(node, msg, options, isTemplated, -1);
+      node.next(msg);
+    });
+  }
+  DORA.registerType("sub", OpSub);
 };
