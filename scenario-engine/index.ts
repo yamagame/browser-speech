@@ -45,7 +45,24 @@ app.post("/recognition", async (req, res) => {
 
 // シナリオ継続通知
 app.post("/ready", async (req, res) => {
-  const username = req.body.username;
+  let username = req.body.username;
+  if (!username) {
+    res.sendStatus(200);
+    return;
+  }
+  robot.ready(username);
+  res.sendStatus(200);
+});
+
+// シナリオ継続通知
+app.post("/robotReady", async (req, res) => {
+  let username = req.body.username;
+  if (!username && req.body.payload) {
+    const m = req.body.payload.match(/username:(.+)/);
+    if (m) {
+      username = m[1];
+    }
+  }
   robot.ready(username);
   res.sendStatus(200);
 });

@@ -91,7 +91,7 @@ export class DoraEngine {
           });
         }
       }
-      this.robots[username].next = callback;
+      if (this.robots[username]) this.robots[username].next = callback;
     });
     socket.addListener("speech-to-text", async (payload, callback) => {
       const { timeout, action } = payload.params;
@@ -111,7 +111,7 @@ export class DoraEngine {
           });
         }
       }
-      this.robots[username].next = callback;
+      if (this.robots[username]) this.robots[username].next = callback;
     });
     socket.addListener("display/image", async (payload, callback) => {
       const { image } = payload.params;
@@ -121,7 +121,7 @@ export class DoraEngine {
           image,
         });
       }
-      this.robots[username].next = callback;
+      if (this.robots[username]) this.robots[username].next = callback;
     });
     socket.addListener("sound", async (payload, callback) => {
       const { sound, action } = payload.params as {
@@ -266,10 +266,13 @@ export class DoraEngine {
   }
 
   think(username: string, transcript: string) {
-    if (this.robots[username].next) this.robots[username].next({ transcript });
+    if (this.robots[username] && this.robots[username].next)
+      this.robots[username].next({ transcript });
   }
 
   ready(username: string) {
-    if (this.robots[username].next) this.robots[username].next({});
+    if (this.robots[username] && this.robots[username].next) {
+      this.robots[username].next({});
+    }
   }
 }

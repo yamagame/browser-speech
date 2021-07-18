@@ -1,7 +1,6 @@
-ようこそ
 ご用件をどうぞ
 :loop
-/timeout/5
+/timeout/30
 /speech-to-text
 /if/テスト/:test
 /if/こんにちは/:hello1
@@ -28,3 +27,17 @@
 /goto/:loop
 
 :end
+/goto.random/:ようこそ/:こんにちは/:いい天気////
+/goto/:loop
+
+:ようこそ
+ようこそ
+/goto/:loop
+
+:いい天気
+今日はいい天気ですね
+/goto/:loop
+
+:こんにちは
+こんにちは
+/goto/:loop

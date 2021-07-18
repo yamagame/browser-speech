@@ -231,7 +231,6 @@ export const vegetables = [
   "チンゲン",
   "パクチー・",
   "ミニトマトボトル",
-  "ミニトマ",
   "しいたけ",
   "バジル",
   "チャオム",
@@ -709,6 +708,8 @@ export const building = [
   "賃貸",
   "リーバ・ハウス",
   "家",
+  "お店",
+  "研究室",
 ].sort((a, b) => {
   return b.length - a.length;
 });
@@ -814,6 +815,8 @@ export const structure = [
   "アトラクション",
   "貯油",
   "催し物",
+  "電通大",
+  "電気通信大学",
 ].sort((a, b) => {
   return b.length - a.length;
 });

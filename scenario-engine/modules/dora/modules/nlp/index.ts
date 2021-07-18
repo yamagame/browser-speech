@@ -4,6 +4,7 @@ const utils = require("../../libs/utils");
 const { vegetables, building, structure, hospital, house } = require("./words");
 const { TextKan2Num } = require("./kan2num");
 const { familyNames } = require("./names");
+const { calcHasegawaScore } = require("./score");
 
 const numberString = "０0１1２2３3４4５5６6７7８8９9";
 
@@ -25,11 +26,11 @@ const slotPattern = {
   電車: [/(電車)/],
   梅: [/(梅)/],
   犬: [/(犬)/],
-  自動車: [/(自動車)/],
+  自動車: [/(自動車)/, "優勝者"],
   数字: [/(\d+)/],
   時計: [/(時計)/, /(OK)/, /(おけい)/],
   くし: ["くし", "福祉", "牛", "節", "寿司", "串", "櫛"],
-  はさみ: [/(はさみ)/, "鋏", "ハサミ", "ささみ"],
+  はさみ: [/(はさみ)/, "鋏", "ハサミ", "ささみ", "挟み"],
   タバコ: [/(タバコ)/, /(たばこ)/],
   ボールペン: [/(ボールペン)/],
   場所: [...building, ...structure, ...hospital, ...house].sort((a, b) => {
@@ -135,6 +136,7 @@ const getSlot = (msg, options, isTemplated = false) => {
         .sort((a, b) => a.index - b.index)
         .map((v) => v.match)
         .join(",");
+      msg.matchOne = foundMatch[0].match;
       msg.slot = foundMatch[0].slot;
     }
   }
@@ -257,7 +259,7 @@ export const Nlp = function (DORA, config = {}) {
       if (isTemplated) {
         message = utils.mustache.render(message, msg);
       }
-      if (msg.nlp.slot[message].length > 0) {
+      if (msg.nlp.slot[message] && msg.nlp.slot[message].length > 0) {
         node.jump(msg);
         return;
       }
@@ -447,4 +449,34 @@ export const Nlp = function (DORA, config = {}) {
     });
   }
   DORA.registerType("hasegawa.keyword", HasegwaKeyword);
+
+  /*
+   * /nlp.hasegawa.score/.payload
+   *
+   */
+  function HasegwaScore(node: Node, options) {
+    var isTemplated = (options || "").indexOf("{{") != -1;
+    const params = options.split("/");
+    if (params.length > 0 && params[0][0] !== ".") {
+      throw new Error("パラメータがありません。");
+    }
+    node.on("input", async function (msg) {
+      prepare(msg);
+
+      let message = options;
+      if (isTemplated) {
+        message = utils.mustache.render(message, msg);
+      }
+      const params = message.split("/");
+      const field = params[0].split(".").filter((v) => v !== "");
+      const result = node.getField(msg, field);
+      if (result !== null) {
+        const { object, key } = result;
+        object[key] = calcHasegawaScore(msg);
+      }
+
+      node.next(msg);
+    });
+  }
+  DORA.registerType("hasegawa.score", HasegwaScore);
 };

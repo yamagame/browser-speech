@@ -24,7 +24,9 @@
 /goto/:名前-認識
 
 :名前-復唱
-こんにちは{{match}}さん
+// 仮の年齢
+/.age/30
+こんにちは{{matchOne}}さん
 :名前-END
 
 // ===================================================================
@@ -69,9 +71,11 @@
 
 今日は何年の何月何日、何曜日ですか？
 /nlp.logger/質問：{{payload}}
+/.loop.日時の見当識-繰り返し/3
+/timeout/10
 :日時の見当識-開始
-/timeout/15
 /speech-to-text
+/if/[timeout]/:日時の見当識-タイムアウト
 /nlp.logger/回答：{{payload}}
 :日時の見当識-確認
 /nlp.slot/年
@@ -79,37 +83,44 @@
 /nlp.slot/日
 /nlp.slot/曜日
 /nlp.check/日時の見当識/:日時の見当識-NEXT
+:日時の見当識-再問い合わせ
 /nlp.exist/年/:日時の見当識-月
-今年は何年かわかりますか？
+/text-to-speech.random/今年は何年かわかりますか？/今年は何年ですか？/今年は何年でしょう？
 /nlp.logger/質問：{{payload}}
 /speech-to-text
+/if/[timeout]/:日時の見当識-タイムアウト
 /nlp.logger/回答：{{payload}}
 /nlp.slot/年/数字
 /goto/:日時の見当識-確認
 
 :日時の見当識-月
 /nlp.exist/月/:日時の見当識-日
-今日は何月でしょう？
+/text-to-speech.random/今日は何月かわかりますか？/今日は何月ですか？/今日は何月でしょう？
 /nlp.logger/質問：{{payload}}
 /speech-to-text
+/if/[timeout]/:日時の見当識-タイムアウト
 /nlp.logger/回答：{{payload}}
 /nlp.slot/月/数字
 /goto/:日時の見当識-確認
 
 :日時の見当識-日
 /nlp.exist/日/:日時の見当識-曜日
-今日は何日ですか？
+/text-to-speech.random/今日は何日かわかりますか？/今日は何日ですか？/今日は何日でしょう？
 /nlp.logger/質問：{{payload}}
 /speech-to-text
+/if/[timeout]/:日時の見当識-タイムアウト
 /nlp.logger/回答：{{payload}}
 /nlp.slot/日/数字
 /goto/:日時の見当識-確認
 
 :日時の見当識-曜日
-今日は何曜日でしょう？
+/text-to-speech.random/今日は何曜日かわかりますか？/今日は何曜日ですか？/今日は何曜日でしょう？
 /nlp.logger/質問：{{payload}}
 /goto/:日時の見当識-開始
 
+:日時の見当識-タイムアウト
+/timeout/5
+/loop/.loop.日時の見当識-繰り返し/:日時の見当識-再問い合わせ
 :日時の見当識-NEXT
 /nlp.save/日時の見当識
 
@@ -127,19 +138,19 @@
 /if/[timeout]/:場所の見当識-RETRY
 /nlp.logger/回答：{{payload}}
 /nlp.slot/場所
-/nlp.check/場所の見当識/:場所の見当識-NEXT
+/nlp.check/場所の見当識/:場所の見当識-END
 
 :場所の見当識-RETRY
-家ですか？病院ですか？施設ですか？
+いえですか？病院ですか？施設ですか？
 /nlp.logger/質問：{{payload}}
 /timeout/15
 /speech-to-text
 /nlp.logger/回答：{{payload}}
 /nlp.slot/場所
-/nlp.check/場所の見当識/:場所の見当識-NEXT
+/nlp.check/場所の見当識2/:場所の見当識-END
 /nlp.save/場所の見当識
 
-:場所の見当識-NEXT
+:場所の見当識-END
 
 // ===================================================================
 :言葉の即時記銘
@@ -195,6 +206,7 @@
 /nlp.logger/質問：{{payload}}
 /timeout/15
 /speech-to-text
+/if/[timeout]/:計算-END
 /nlp.logger/回答：{{payload}}
 /nlp.slot/数字
 /nlp.check/計算1
@@ -202,7 +214,7 @@
 /.payload/{{match}}
 /switch/93/:計算2-NEXT
 /nlp.save/計算1
-/goto/:計算-NEXT
+/goto/:計算-END
 
 :計算2-NEXT
 それから7を引くといくつですか？
@@ -213,7 +225,12 @@
 /nlp.slot/数字
 /nlp.check/計算2
 /nlp.save/計算2
-:計算-NEXT
+/.payload/{{match}}
+/switch/86/:計算3-NEXT
+/goto/:計算-END
+
+:計算3-NEXT
+:計算-END
 
 // ===================================================================
 :数字の逆唱
@@ -228,6 +245,7 @@
 /nlp.clear.order
 /nlp.hasegawa.number
 /nlp.logger/質問：{{payload}}「{{hasegawa.n1}}{{hasegawa.n2}}{{hasegawa.n3}}」
+/.hasegawa.reverseNumber1/{{hasegawa.n1}}{{hasegawa.n2}}{{hasegawa.n3}}
 
 {{hasegawa.n1}}
 
@@ -245,7 +263,7 @@
 /nlp.check.order/数字の逆唱1/:数字の逆唱2
 /loop/.loop.数字の逆唱-繰り返し/:数字の逆唱1-再問い合わせ
 /nlp.save/数字の逆唱1
-/goto/:数字の逆唱-NEXT
+/goto/:数字の逆唱-END
 
 :数字の逆唱2
 これから言う数字も逆から言ってみてください。
@@ -253,6 +271,7 @@
 /nlp.clear.order
 /nlp.hasegawa.number
 /nlp.logger/質問：{{payload}}「{{hasegawa.n1}}、{{hasegawa.n2}}、{{hasegawa.n3}}、{{hasegawa.n4}}」
+/.hasegawa.reverseNumber2/{{hasegawa.n1}}{{hasegawa.n2}}{{hasegawa.n3}}{{hasegawa.n4}}
 
 {{hasegawa.n1}}
 
@@ -270,11 +289,10 @@
 /nlp.slot/{{hasegawa.n3}}
 /nlp.slot/{{hasegawa.n2}}
 /nlp.slot/{{hasegawa.n1}}
-/nlp.check.order/数字の逆唱2/:数字の逆唱-NEXT
+/nlp.check.order/数字の逆唱2/:数字の逆唱-END
 /loop/.loop.数字の逆唱-繰り返し/:数字の逆唱2-再問い合わせ
 /nlp.save/数字の逆唱2
 
-:数字の逆唱-NEXT
 :数字の逆唱-END
 はい、次の質問に行きます。
 
@@ -295,7 +313,7 @@
 /nlp.slot/{{hasegawa.w1}}
 /nlp.slot/{{hasegawa.w2}}
 /nlp.slot/{{hasegawa.w3}}
-/nlp.check/言葉の遅延再生/:言葉の遅延再生-NEXT
+/nlp.check/言葉の遅延再生1/:言葉の遅延再生-END
 /nlp.exist/{{hasegawa.w1}}/:言葉の遅延再生-復唱
 /nlp.exist/{{hasegawa.w2}}/:言葉の遅延再生-復唱
 /nlp.exist/{{hasegawa.w3}}/:言葉の遅延再生-復唱
@@ -312,12 +330,12 @@
 :言葉の遅延再生-再認識2
 /timeout/10
 /speech-to-text
-/if/[timeout]/:言葉の遅延再生-NEXT
+/if/[timeout]/:言葉の遅延再生-END
 /nlp.logger/回答：{{payload}}
 /nlp.slot/{{hasegawa.w1}}
 /nlp.slot/{{hasegawa.w2}}
 /nlp.slot/{{hasegawa.w3}}
-/nlp.check/言葉の遅延再生/:言葉の遅延再生-NEXT
+/nlp.check/言葉の遅延再生2/:言葉の遅延再生-END
 /nlp.exist/{{hasegawa.w1}}/:言葉の遅延再生-復唱2
 /nlp.exist/{{hasegawa.w2}}/:言葉の遅延再生-復唱2
 /nlp.exist/{{hasegawa.w3}}/:言葉の遅延再生-復唱2
@@ -328,7 +346,7 @@
 {{slot}}
 /goto/:言葉の遅延再生-再認識2
 
-:言葉の遅延再生-NEXT
+:言葉の遅延再生-END
 それでは、次の質問です。
 
 // ===================================================================
@@ -400,7 +418,7 @@
 //正答数ごとに右記点数 正答数10個以上　5点
 //正答数9個　4点
 //正答数8個　3点
-//正答数7個以上　2点x
+//正答数7個以上　2点
 //正答数6個以上　1点
 //正答数0～5個 0点
 知っている野菜の名前をできるだけ多く言ってください。
@@ -423,6 +441,9 @@
 :野菜-END
 /nlp.save/言語の流暢性
 
+/nlp.hasegawa.score/.score
+/nlp.logger/スコア:{{score}}
 これで長谷川式認知症診断を終わります。
+あなたのスコアは{{score}}点でした。
 お疲れ様でした。
 /nlp.endQuestion
