@@ -477,7 +477,7 @@ export const Nlp = function (DORA, config = {}) {
           object[key] = score;
           msg.hasegawa = {
             ...msg.hasegawa,
-            result: msg.hasegawa.result,
+            result,
           };
         } catch (err) {
           console.error(err);
