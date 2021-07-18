@@ -1,3 +1,4 @@
+/now
 /nlp.logger/{{timestamp}}
 /image/title.png
 /nlp.startQuestion
@@ -18,6 +19,7 @@
 
 :名前-タイムアウト
 /loop/.loop.名前-繰り返し/:名前-再問い合わせ
+こんにちはお客様、次の質問にすすみますね。
 /goto/:名前-END
 
 :名前-再問い合わせ
@@ -96,7 +98,7 @@
 
 :日時の見当識-月
 /nlp.exist/月/:日時の見当識-日
-/text-to-speech.random/今日はなんがつかわかりますか？/今日ははなんがつですか？/今日はなんがつでしょう？
+/text-to-speech.random/今日はなんがつかわかりますか？/今日はなんがつですか？/今日はなんがつでしょう？
 /nlp.logger/質問：{{payload}}
 /speech-to-text
 /if/[timeout]/:日時の見当識-タイムアウト
@@ -165,7 +167,7 @@
 /.loop.言葉の即時記銘-繰り返し/3
 これから言う3つの言葉を言ってみてください。
 /nlp.hasegawa.keyword
-/nlp.logger/質問：{{payload}}「{{hasegawa.w1}}」「{{hasegawa.w2}}」「{{hasegawa.w3}}」
+/nlp.logger/質問：{{payload}}「{{hasegawa.w1}}、{{hasegawa.w2}}、{{hasegawa.w3}}」
 
 あとの設問でまた聞きますので、よく覚えておいてください。
 
@@ -271,7 +273,7 @@
 /.loop.数字の逆唱-繰り返し/3
 /nlp.clear.order
 /nlp.hasegawa.number
-/nlp.logger/質問：{{payload}}「{{hasegawa.n1}}、{{hasegawa.n2}}、{{hasegawa.n3}}、{{hasegawa.n4}}」
+/nlp.logger/質問：{{payload}}「{{hasegawa.n1}}{{hasegawa.n2}}{{hasegawa.n3}}{{hasegawa.n4}}」
 /.hasegawa.reverseNumber2/{{hasegawa.n1}}{{hasegawa.n2}}{{hasegawa.n3}}{{hasegawa.n4}}
 
 {{hasegawa.n1}}
@@ -448,4 +450,5 @@
 これで長谷川式認知症診断を終わります。
 あなたのスコアは{{score}}点でした。
 お疲れ様でした。
+/nlp.logger
 /nlp.endQuestion
