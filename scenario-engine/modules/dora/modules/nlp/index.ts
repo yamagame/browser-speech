@@ -25,7 +25,7 @@ const slotPattern = {
   猫: [/(猫)/, /(ねこ)/, "日光"],
   電車: [/(電車)/],
   梅: [/(梅)/],
-  犬: [/(犬)/],
+  犬: [/(犬)/, "けん"],
   自動車: [/(自動車)/, "優勝者"],
   数字: [/(\d+)/],
   時計: [/(時計)/, /(OK)/, /(おけい)/],
@@ -472,7 +472,21 @@ export const Nlp = function (DORA, config = {}) {
       const result = node.getField(msg, field);
       if (result !== null) {
         const { object, key } = result;
-        object[key] = calcHasegawaScore(msg);
+        try {
+          const { score, result } = calcHasegawaScore(msg);
+          object[key] = score;
+          msg.hasegawa = {
+            ...msg.hasegawa,
+            result: msg.hasegawa.result,
+          };
+        } catch (err) {
+          console.error(err);
+          object[key] = 0;
+          msg.hasegawa = {
+            ...msg.hasegawa,
+            result: {},
+          };
+        }
       }
 
       node.next(msg);
