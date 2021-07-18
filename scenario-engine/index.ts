@@ -2,6 +2,7 @@ const path = require("path");
 const express = require("express");
 const port = process.env.PORT || 5200;
 const backendHost = process.env.BACKEND_HOST || null;
+const robotServer = process.env.ROBOT_SERVER || null;
 const scenarioHost = process.env.SCENARIO_HOST || "http://localhost";
 const scenarioDir =
   process.env.SCENARIO_DIR || path.join(__dirname, "scenario");
@@ -12,7 +13,9 @@ const { DoraEngine } = require("modules/DoraEngine");
 const robot = new DoraEngine({
   scenarioDir,
   backendHost,
-  scenarioHost: `${scenarioHost}:${port}`,
+  robotServer,
+  scenarioHost,
+  scenarioPort: `${port}`,
   loggerHost,
   commandDir,
 });
@@ -77,6 +80,7 @@ app.post("/transcript", async (req, res) => {
 
 app.listen(port, () => {
   console.log(`backendHost: ${backendHost}`);
+  console.log(`robotServer: ${robotServer}`);
   console.log(`scenarioDir: ${scenarioDir}`);
   console.log(`scenario-engine app listening at ${scenarioHost}:${port}`);
 });

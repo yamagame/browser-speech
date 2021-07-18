@@ -2,6 +2,7 @@ const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
+const ip = require("ip");
 import { EventEmitter } from "events";
 import { Dora, Node } from "./dora";
 
@@ -37,7 +38,9 @@ function kill(pid, signal, callback) {
 export type DoraEngineProps = {
   scenarioDir: string;
   backendHost: string;
+  robotServer?: string;
   scenarioHost: string;
+  scenarioPort: string;
   commandDir: string;
   loggerHost: string;
 };
@@ -52,7 +55,9 @@ export class DoraEngine {
   options: DoraEngineProps = {
     scenarioDir: "",
     backendHost: "",
+    robotServer: "",
     scenarioHost: "",
+    scenarioPort: "",
     commandDir: "",
     loggerHost: "",
   };
@@ -67,7 +72,14 @@ export class DoraEngine {
     const scenarioPath = (filename) =>
       path.join(this.options.scenarioDir, filename);
 
-    const { backendHost, scenarioHost, commandDir, loggerHost } = this.options;
+    const {
+      backendHost,
+      scenarioHost,
+      scenarioPort,
+      commandDir,
+      loggerHost,
+      robotServer,
+    } = this.options;
 
     const socket = new EventEmitter();
     socket.addListener("text-to-speech", async (payload, callback) => {
@@ -76,7 +88,12 @@ export class DoraEngine {
         action: "play" | "stop";
       };
       if (action === "play") {
-        if (backendHost) {
+        if (robotServer) {
+          await axios.post(`${robotServer}/speech`, {
+            payload: message,
+            username,
+          });
+        } else if (backendHost) {
           await axios.post(`${backendHost}/text-to-speech/start`, {
             utterance: message,
             username,
@@ -176,7 +193,18 @@ export class DoraEngine {
     const res = { username };
     await axios.post(`${backendHost}/start`, res);
 
+    if (robotServer) {
+      await axios.post(`${robotServer}/speech`, {
+        payload: `${ip.address()}:${scenarioPort}`,
+      });
+    }
+
     const play = async ({ startScenario, range, username }, defaults) => {
+      if (robotServer) {
+        await axios.post(`${robotServer}/speech`, {
+          payload: `username:${username}`,
+        });
+      }
       function emitError(err) {
         err.info = dora.errorInfo();
         if (!err.info.reason) {
@@ -199,10 +227,11 @@ export class DoraEngine {
           {
             username,
             scenarioDir: this.options.scenarioDir,
+            ipAddress: ip.address(),
           },
           {
             socket,
-            host: scenarioHost,
+            host: `${scenarioHost}:${scenarioPort}`,
             loggerHost,
             range,
             defaults,

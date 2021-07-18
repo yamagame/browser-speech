@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "tsc -w -p tsconfig.json & COMMAND_DIR=`pwd`/command SCENARIO_DIR=`pwd`/scenario LOGGER_HOST=http://localhost:4100/logger BACKEND_HOST=http://localhost:4100 NODE_PATH=./dist nodemon --config nodemon.json",
+    "robot": "tsc -w -p tsconfig.json & COMMAND_DIR=`pwd`/command SCENARIO_DIR=`pwd`/scenario LOGGER_HOST=http://localhost:4100/logger ROBOT_SERVER=http://192.168.37.1:3090 BACKEND_HOST=http://localhost:4100 NODE_PATH=./dist nodemon --config nodemon.json",
     "build": "webpack",
     "test": "NODE_PATH=dist jest"
   },
@@ -15,14 +16,17 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@types/axios": "^0.14.0",
     "@types/clone": "^2.1.0",
     "@types/express": "^4.17.12",
+    "@types/ip": "^1.1.0",
     "@types/mustache": "^4.1.1",
     "@types/node-fetch": "^2.5.10",
     "@types/ps-tree": "^1.1.0",
     "axios": "^0.21.1",
     "clone": "^2.1.2",
     "express": "^4.17.1",
+    "ip": "^1.1.5",
     "mecab-async": "^0.1.2",
     "mustache": "^4.2.0",
     "node-fetch": "^2.6.1",
