@@ -140,6 +140,11 @@ export class DoraEngine {
       }
       if (this.robots[username]) this.robots[username].next = callback;
     });
+    socket.addListener("http-request", async (payload, callback) => {
+      console.log(payload.request);
+      if (this.robots[username]) this.robots[username].next = callback;
+      await axios.request(payload.request);
+    });
     socket.addListener("sound", async (payload, callback) => {
       const { sound, action } = payload.params as {
         sound: string;
@@ -193,18 +198,7 @@ export class DoraEngine {
     const res = { username };
     await axios.post(`${backendHost}/start`, res);
 
-    if (robotServer) {
-      await axios.post(`${robotServer}/speech`, {
-        payload: `${ip.address()}:${scenarioPort}`,
-      });
-    }
-
     const play = async ({ startScenario, range, username }, defaults) => {
-      if (robotServer) {
-        await axios.post(`${robotServer}/speech`, {
-          payload: `username:${username}`,
-        });
-      }
       function emitError(err) {
         err.info = dora.errorInfo();
         if (!err.info.reason) {
@@ -227,6 +221,10 @@ export class DoraEngine {
           {
             username,
             scenarioDir: this.options.scenarioDir,
+            applicationType: robotServer !== "" ? "robot" : "browser",
+            robotServer,
+            scenarioHost,
+            scenarioPort,
             ipAddress: ip.address(),
           },
           {

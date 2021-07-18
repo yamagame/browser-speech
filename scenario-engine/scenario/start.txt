@@ -1,3 +1,24 @@
+/gosub/:INIT-ROBOT
 //run/vegetable.txt
 //run/hasegawa.txt
 /run/welcome.txt
+/end
+
+:INIT-ROBOT
+/.payload/{{applicationType}}
+/if/browser/:END-2
+// --------------------------------------------------
+:REQUEST-1
+/.payload/username:{{username}}
+/nlp.post/{{{robotServer}}}/speech
+// --------------------------------------------------
+:REQUEST-2
+/.payload/{{ipAddress}}:{{scenarioPort}}
+/nlp.post/{{{robotServer}}}/speech
+/if/[timeout]/:RETRY-2
+/goto/:END-2
+:RETRY-2
+/delay/3
+/goto/:REQUEST-1
+:END-2
+/return

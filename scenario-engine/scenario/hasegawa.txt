@@ -69,7 +69,7 @@
 //日　　不正解　0点　正解　1点
 //曜日　　不正解　0点　正解　1点
 
-今日は何年の何月何日、何曜日ですか？
+今日は何年のなんがつなん日、なん曜日ですか？
 /nlp.logger/質問：{{payload}}
 /.loop.日時の見当識-繰り返し/3
 /timeout/10
@@ -95,7 +95,7 @@
 
 :日時の見当識-月
 /nlp.exist/月/:日時の見当識-日
-/text-to-speech.random/今日は何月かわかりますか？/今日は何月ですか？/今日は何月でしょう？
+/text-to-speech.random/今日はなんがつかわかりますか？/今日ははなんがつですか？/今日はなんがつでしょう？
 /nlp.logger/質問：{{payload}}
 /speech-to-text
 /if/[timeout]/:日時の見当識-タイムアウト
@@ -105,7 +105,7 @@
 
 :日時の見当識-日
 /nlp.exist/日/:日時の見当識-曜日
-/text-to-speech.random/今日は何日かわかりますか？/今日は何日ですか？/今日は何日でしょう？
+/text-to-speech.random/今日はなん日かわかりますか？/今日はなん日ですか？/今日はなん日でしょう？
 /nlp.logger/質問：{{payload}}
 /speech-to-text
 /if/[timeout]/:日時の見当識-タイムアウト
@@ -114,7 +114,7 @@
 /goto/:日時の見当識-確認
 
 :日時の見当識-曜日
-/text-to-speech.random/今日は何曜日かわかりますか？/今日は何曜日ですか？/今日は何曜日でしょう？
+/text-to-speech.random/今日はなん曜日かわかりますか？/今日はなん曜日ですか？/今日はなん曜日でしょう？
 /nlp.logger/質問：{{payload}}
 /goto/:日時の見当識-開始
 
@@ -407,6 +407,7 @@
 /goto/:物品記銘-再認識
 
 :物品記銘-NEXT
+/nlp.save/物品記銘
 /image/title.png
 それでは、次の質問です。
 

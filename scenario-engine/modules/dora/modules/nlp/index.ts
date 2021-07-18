@@ -32,7 +32,7 @@ const slotPattern = {
   くし: ["くし", "福祉", "牛", "節", "寿司", "串", "櫛"],
   はさみ: [/(はさみ)/, "鋏", "ハサミ", "ささみ", "挟み"],
   タバコ: [/(タバコ)/, /(たばこ)/],
-  ボールペン: [/(ボールペン)/],
+  ボールペン: [/(ボールペン)/, "ペン"],
   場所: [...building, ...structure, ...hospital, ...house].sort((a, b) => {
     return b.length - a.length;
   }),
@@ -493,4 +493,45 @@ export const Nlp = function (DORA, config = {}) {
     });
   }
   DORA.registerType("hasegawa.score", HasegwaScore);
+
+  /*
+   * /nlp.post
+   * ロボットの設定を送信
+   */
+  function Post(node: Node, options) {
+    var isTemplated = (options || "").indexOf("{{") != -1;
+    node.on("input", async function (msg) {
+      const { socket } = node.flow.options;
+      prepare(msg);
+      let message = options;
+      if (isTemplated) {
+        message = utils.mustache.render(message, msg);
+      }
+      let timeout = setTimeout(() => {
+        timeout = null;
+        msg.payload = "[timeout]";
+        node.next(msg);
+      }, 3000);
+      socket.emit(
+        "http-request",
+        {
+          msg,
+          request: {
+            method: "post",
+            url: message,
+            data: { payload: msg.payload },
+          },
+          node,
+        },
+        (res) => {
+          if (timeout) {
+            clearTimeout(timeout);
+            timeout = null;
+            node.next(msg);
+          }
+        }
+      );
+    });
+  }
+  DORA.registerType("post", Post);
 };
