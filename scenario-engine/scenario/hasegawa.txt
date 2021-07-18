@@ -1,3 +1,4 @@
+/nlp.logger/{{timestamp}}
 /image/title.png
 /nlp.startQuestion
 それでは、長谷川式認知症診断を始めます。

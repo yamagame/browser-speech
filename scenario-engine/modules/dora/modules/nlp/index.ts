@@ -191,7 +191,7 @@ export const Nlp = function (DORA, config = {}) {
             method: "POST",
             headers,
             body: JSON.stringify({
-              payload: message,
+              payload: options !== "" ? message : msg,
             }),
             timeout: "httpTimeout" in msg ? msg.httpTimeout : 3000,
           });
