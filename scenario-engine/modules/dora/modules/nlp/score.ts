@@ -13,7 +13,7 @@ export const calcHasegawaScore = (msg) => {
   // msg.nlp.store["年齢"][0]["歳"][0].match
   {
     const store = filter(msg.nlp.store["年齢"]);
-    let age = 0;
+    let age = [];
     let value = 1;
     if (store) {
       const correctAget = Number(msg.age);
@@ -22,9 +22,9 @@ export const calcHasegawaScore = (msg) => {
         .some((a) => {
           return a["歳"].some((a) => {
             const answerAge = Number(a.match);
+            age.push(answerAge);
             if (answerAge >= correctAget - 1 && answerAge <= correctAget + 1) {
               // value++;
-              age = answerAge;
               return true;
             }
             return false;
