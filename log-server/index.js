@@ -11,7 +11,7 @@ app.use(express.raw({ type: "application/*" }));
 app.use(express.text());
 
 app.post("/logger", (req, res) => {
-  console.log(req.body);
+  console.log(JSON.stringify(req.body, null, "  "));
   res.sendStatus(200);
 });
 

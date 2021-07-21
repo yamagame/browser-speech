@@ -179,6 +179,20 @@ export const Nlp = function (DORA, config = {}) {
     node.on("input", async function (msg) {
       const { loggerHost } = node.flow.options;
       prepare(msg);
+      const makeLogData = (message, category) => {
+        const data = {} as any;
+        const m = message.match("(.+)：(.*)");
+        if (m) {
+          data[m[1]] = m[2];
+        }
+        if (category) {
+          data.category = category;
+        }
+        return {
+          timestamp: new Date(),
+          ...data,
+        };
+      };
       let message = options;
       if (isTemplated) {
         message = utils.mustache.render(message, msg);
@@ -191,7 +205,8 @@ export const Nlp = function (DORA, config = {}) {
             method: "POST",
             headers,
             body: JSON.stringify({
-              payload: options !== null ? message : msg,
+              payload:
+                options !== null ? makeLogData(message, msg.category) : msg,
             }),
             timeout: "httpTimeout" in msg ? msg.httpTimeout : 3000,
           });
