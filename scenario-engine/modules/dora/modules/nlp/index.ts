@@ -201,16 +201,15 @@ export const Nlp = function (DORA, config = {}) {
         const headers = {};
         try {
           headers["Content-Type"] = "application/json";
-          const body = {
+          const payload = {
             method: "POST",
             headers,
-            body: JSON.stringify({
-              payload:
-                options !== null ? makeLogData(message, msg.category) : msg,
-            }),
+            body: JSON.stringify(
+              options !== null ? makeLogData(message, msg.category) : msg
+            ),
             timeout: "httpTimeout" in msg ? msg.httpTimeout : 3000,
           };
-          const response = await fetch(`${loggerHost}`, body);
+          const response = await fetch(`${loggerHost}`, payload);
           if (response.ok) {
           } else {
             if (msg._httpErrorInterrupt && msg._httpErrorInterrupt.length > 0) {
