@@ -17,7 +17,7 @@ function Add(node, msg, options, isTemplated, sign) {
   }
 }
 
-const EmitTextToSpeech = (node: Node, msg, message) => {
+export const EmitTextToSpeech = (node: Node, msg, message) => {
   const { socket } = node.flow.options;
   delete msg.slot;
   delete msg.match;
@@ -636,54 +636,78 @@ export const Core = function (DORA, config = {}) {
   DORA.registerType("change", CoreChange);
 
   /*
-   *
-   *
+   * 発話
+   * /text-to-speech
+   * ロボット向けの発話
+   * /text-to-speech.robot
+   * ブラウザ向けの発話
+   * /text-to-speech.browser
    */
-  function TextToSpeech(node: Node, options) {
-    const isTemplated = (options || "").indexOf("{{") != -1;
-    node.on("input", async function (msg) {
-      const { socket } = node.flow.options;
-      var message = options || msg.payload;
-      if (isTemplated) {
-        message = utils.mustache.render(message, msg);
-      }
-      EmitTextToSpeech(node, msg, message);
-    });
+  function Speech(type?: "robot" | "browser") {
+    return (node: Node, options) => {
+      const isTemplated = (options || "").indexOf("{{") != -1;
+      node.on("input", async function (msg) {
+        if (!type || msg.applicationType === type) {
+          const { socket } = node.flow.options;
+          var message = options || msg.payload;
+          if (isTemplated) {
+            message = utils.mustache.render(message, msg);
+          }
+          EmitTextToSpeech(node, msg, message);
+        } else {
+          node.next(msg);
+        }
+      });
+    };
   }
-  DORA.registerType("text-to-speech", TextToSpeech);
+  DORA.registerType("text-to-speech", Speech());
+  DORA.registerType("text-to-speech.robot", Speech("robot"));
+  DORA.registerType("text-to-speech.browser", Speech("browser"));
 
   /*
    * ランダムに発話
    * /text-to-speech.random/こんにちは/ヤッホー/こんちわー
+   * ロボット向けの発話
+   * /text-to-speech.random.robot/こんにちは/ヤッホー/こんちわー
+   * ブラウザ向けの発話
+   * /text-to-speech.random.browser/こんにちは/ヤッホー/こんちわー
    */
-  function SpeechRandom(node: Node, options) {
-    const isTemplated = (options || "").indexOf("{{") != -1;
-    node._counter = 0;
-    node.on("input", async function (msg) {
-      let message = options || "";
-      if (isTemplated) {
-        message = utils.mustache.render(message, msg);
-      }
-      const params = message.split("/");
-      if (node._counter === 0) {
-        node._randtable = new Array(params.length).fill(0).map((_, i) => i);
-        for (var i = 0; i < params.length * 3; i++) {
-          const a = utils.randInteger(0, params.length);
-          const b = utils.randInteger(0, params.length);
-          const c = node._randtable[a];
-          node._randtable[a] = node._randtable[b];
-          node._randtable[b] = c;
+  function SpeechRandom(type?: "robot" | "browser") {
+    return (node: Node, options) => {
+      const isTemplated = (options || "").indexOf("{{") != -1;
+      node._counter = 0;
+      node.on("input", async function (msg) {
+        if (!type || msg.applicationType === type) {
+          let message = options || "";
+          if (isTemplated) {
+            message = utils.mustache.render(message, msg);
+          }
+          const params = message.split("/");
+          if (node._counter === 0) {
+            node._randtable = new Array(params.length).fill(0).map((_, i) => i);
+            for (var i = 0; i < params.length * 3; i++) {
+              const a = utils.randInteger(0, params.length);
+              const b = utils.randInteger(0, params.length);
+              const c = node._randtable[a];
+              node._randtable[a] = node._randtable[b];
+              node._randtable[b] = c;
+            }
+          }
+          message = params[node._randtable[node._counter]];
+          node._counter++;
+          if (node._counter >= params.length) {
+            node._counter = 0;
+          }
+          EmitTextToSpeech(node, msg, message);
+        } else {
+          node.next(msg);
         }
-      }
-      message = params[node._randtable[node._counter]];
-      node._counter++;
-      if (node._counter >= params.length) {
-        node._counter = 0;
-      }
-      EmitTextToSpeech(node, msg, message);
-    });
+      });
+    };
   }
-  DORA.registerType("text-to-speech.random", SpeechRandom);
+  DORA.registerType("text-to-speech.random", SpeechRandom());
+  DORA.registerType("text-to-speech.random.robot", SpeechRandom("robot"));
+  DORA.registerType("text-to-speech.random.browser", SpeechRandom("browser"));
 
   /*
    *
