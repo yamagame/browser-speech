@@ -186,10 +186,10 @@ export const Nlp = function (DORA, config = {}) {
           data[m[1]] = m[2];
         }
         if (category) {
-          data.category = category;
+          data["観点"] = category;
         }
         return {
-          timestamp: new Date(),
+          時間: new Date(),
           ...data,
         };
       };
@@ -201,7 +201,7 @@ export const Nlp = function (DORA, config = {}) {
         const headers = {};
         try {
           headers["Content-Type"] = "application/json";
-          let response = await fetch(`${loggerHost}`, {
+          const body = {
             method: "POST",
             headers,
             body: JSON.stringify({
@@ -209,7 +209,8 @@ export const Nlp = function (DORA, config = {}) {
                 options !== null ? makeLogData(message, msg.category) : msg,
             }),
             timeout: "httpTimeout" in msg ? msg.httpTimeout : 3000,
-          });
+          };
+          const response = await fetch(`${loggerHost}`, body);
           if (response.ok) {
           } else {
             if (msg._httpErrorInterrupt && msg._httpErrorInterrupt.length > 0) {
