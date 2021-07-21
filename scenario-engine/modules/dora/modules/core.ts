@@ -775,41 +775,13 @@ export const Core = function (DORA, config = {}) {
           } else if (res == "[canceled]") {
             msg.payload = "canceled";
             node.send(msg);
-          } else if (res == "[camera]") {
-            msg.payload = "camera";
-            node.send(msg);
           } else {
-            if (res.button) {
-              msg.payload = "button";
-              msg.button = res;
-              delete res.button;
-              node.send(msg);
-            } else if (res.gamepad) {
-              msg.payload = "gamepad";
-              msg.gamepad = res;
-              delete res.gamepad;
-              node.send(msg);
-            } else if (res.speechRequest) {
-              msg.speechRequest = true;
-              msg.payload = res.payload;
-              msg.speechText = msg.payload;
-              msg.topicPriority = 0;
-              node.next(msg);
-            } else if (typeof res === "object") {
-              (msg.languageCode = res.languageCode),
-                (msg.confidence = res.confidence);
-              msg.payload = res.transcript;
-              msg.speechText = msg.payload;
-              msg.topicPriority = 0;
-              delete msg.speechRequest;
-              node.next(msg);
-            } else {
-              msg.payload = res;
-              msg.speechText = msg.payload;
-              msg.topicPriority = 0;
-              delete msg.speechRequest;
-              node.next(msg);
-            }
+            (msg.languageCode = res.languageCode),
+              (msg.confidence = res.confidence);
+            msg.payload = res.transcript;
+            msg.speechText = msg.payload;
+            delete msg.speechRequest;
+            node.next(msg);
           }
         }
       );
@@ -858,41 +830,13 @@ export const Core = function (DORA, config = {}) {
           } else if (res == "[canceled]") {
             msg.payload = "canceled";
             node.send(msg);
-          } else if (res == "[camera]") {
-            msg.payload = "camera";
-            node.send(msg);
           } else {
-            if (res.button) {
-              msg.payload = "button";
-              msg.button = res;
-              delete res.button;
-              node.send(msg);
-            } else if (res.gamepad) {
-              msg.payload = "gamepad";
-              msg.gamepad = res;
-              delete res.gamepad;
-              node.send(msg);
-            } else if (res.speechRequest) {
-              msg.speechRequest = true;
-              msg.payload = res.payload;
-              msg.speechText = msg.payload;
-              msg.topicPriority = 0;
-              node.next(msg);
-            } else if (typeof res === "object") {
-              (msg.languageCode = res.languageCode),
-                (msg.confidence = res.confidence);
-              msg.payload = res.transcript;
-              msg.speechText = msg.payload;
-              msg.topicPriority = 0;
-              delete msg.speechRequest;
-              node.next(msg);
-            } else {
-              msg.payload = res;
-              msg.speechText = msg.payload;
-              msg.topicPriority = 0;
-              delete msg.speechRequest;
-              node.next(msg);
-            }
+            (msg.languageCode = res.languageCode),
+              (msg.confidence = res.confidence);
+            msg.payload = res.transcript;
+            msg.speechText = msg.payload;
+            delete msg.speechRequest;
+            node.next(msg);
           }
         }
       );
