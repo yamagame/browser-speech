@@ -141,9 +141,13 @@ export class DoraEngine {
       if (this.robots[username]) this.robots[username].next = callback;
     });
     socket.addListener("http-request", async (payload, callback) => {
-      console.log(payload.request);
       if (this.robots[username]) this.robots[username].next = callback;
-      await axios.request(payload.request);
+      try {
+        await axios.request(payload.request);
+      } catch {
+        delete this.robots[username].next;
+        callback();
+      }
     });
     socket.addListener("sound", async (payload, callback) => {
       const { sound, action } = payload.params as {
@@ -221,7 +225,7 @@ export class DoraEngine {
           {
             username,
             scenarioDir: this.options.scenarioDir,
-            applicationType: robotServer !== "" ? "robot" : "browser",
+            applicationType: robotServer !== null ? "robot" : "browser",
             robotServer,
             scenarioHost,
             scenarioPort,
@@ -293,13 +297,16 @@ export class DoraEngine {
   }
 
   think(username: string, transcript: string) {
-    if (this.robots[username] && this.robots[username].next)
+    if (this.robots[username] && this.robots[username].next) {
       this.robots[username].next({ transcript });
+      delete this.robots[username].next;
+    }
   }
 
   ready(username: string) {
     if (this.robots[username] && this.robots[username].next) {
       this.robots[username].next({});
+      delete this.robots[username].next;
     }
   }
 }
