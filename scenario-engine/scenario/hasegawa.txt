@@ -456,8 +456,9 @@
 :野菜-END
 /nlp.save/言語の流暢性
 
+/.category/採点
 /nlp.hasegawa.score/.score
-/nlp.logger/スコア:{{score}}
+/nlp.logger/スコア：{{score}}
 これで長谷川式認知症診断を終わります。
 あなたのスコアは{{score}}点でした。
 お疲れ様でした。
