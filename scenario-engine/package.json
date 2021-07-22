@@ -6,7 +6,7 @@
   "scripts": {
     "start": "tsc -w -p tsconfig.json & COMMAND_DIR=`pwd`/command SCENARIO_DIR=`pwd`/scenario LOGGER_HOST=http://localhost:4200/logger BACKEND_HOST=http://localhost:4100 NODE_PATH=./dist nodemon --config nodemon.json",
     "robot": "tsc -w -p tsconfig.json & COMMAND_DIR=`pwd`/command SCENARIO_DIR=`pwd`/scenario LOGGER_HOST=http://localhost:4200/logger ROBOT_SERVER=http://cardbot.local:3090 BACKEND_HOST=http://localhost:4100 NODE_PATH=./dist nodemon --config nodemon.json",
-    "build": "webpack",
+    "build": "tsc -p tsconfig.json",
     "test": "NODE_PATH=dist jest"
   },
   "engines": {
@@ -25,6 +25,7 @@
     "@types/ps-tree": "^1.1.0",
     "axios": "^0.21.1",
     "clone": "^2.1.2",
+    "component-emitter": "^1.3.0",
     "express": "^4.17.1",
     "ip": "^1.1.5",
     "mecab-async": "^0.1.2",

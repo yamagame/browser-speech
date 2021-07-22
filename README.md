@@ -21,16 +21,11 @@ $ npm start
 
 ## docker compose で起動
 
-先にフロントをビルドします。
+必要があれば TARGET_PORT、TARGET_HOST でログを送信する先のサーバーを指定します。
+指定したホストに JSON データを UDP で送信します。
 
 ```
-$ npm run build
-```
-
-起動します。
-
-```
-$ docker-compose up
+$ TARGET_PORT=7010 TARGET_HOST=192.168.11.153 docker-compose up
 ```
 
 以下の URL をブラウザで開きます。

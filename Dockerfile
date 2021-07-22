@@ -6,7 +6,7 @@ ENV SCENARIO_MANAGER_HOST $SCENARIO_MANAGER_HOST
 EXPOSE $PORT
 WORKDIR /app
 COPY . .
-RUN yarn init -y
-RUN yarn add express axios sockjs
+RUN yarn install
+RUN yarn build
 CMD ["backend.js"]
 ENTRYPOINT ["node"]

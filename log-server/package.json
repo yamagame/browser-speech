@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "debug": "TARGET_PORT=7010 TARGET_HOST=192.168.11.153 node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
   },
   "keywords": [],
   "author": "",

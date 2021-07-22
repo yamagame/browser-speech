@@ -1,12 +1,17 @@
 FROM node:lts-alpine
 ARG PORT=5200
-ENV PORT $PORT
 ARG BACKEND_HOST
+ARG LOGGER_HOST
+ENV PORT $PORT
 ENV BACKEND_HOST $BACKEND_HOST
+ENV LOGGER_HOST $LOGGER_HOST
+ENV COMMAND_DIR /app/command
+ENV SCENARIO_DIR /app/scenario
 EXPOSE $PORT
 WORKDIR /app
 COPY . .
-RUN yarn init -y
-RUN yarn add express axios sockjs
+RUN yarn install
+RUN yarn build
+ENV NODE_PATH /app/dist
 CMD ["index.js"]
 ENTRYPOINT ["node"]

@@ -10,20 +10,34 @@ services:
       - node
       - backend.js
     tty: true
-    volumes:
-      - "${PWD}:/app"
     ports:
       - "4100:4100"
   scenario-engine:
     build:
-      context: .
-      dockerfile: scenario-engine/Dockerfile
+      context: scenario-engine/
       args:
         - "BACKEND_HOST=http://browser-speech:4100"
+        - "LOGGER_HOST=http://log-server:4200"
         - "PORT=5200"
+        - "NODE_PATH=/dist"
     entrypoint:
       - node
-      - scenario-engine/index.js
+      - dist/index.js
     tty: true
     volumes:
-      - "${PWD}:/app"
+      - "${PWD}/scenario:/app/scenario"
+    ports:
+      - "5200:5200"
+  log-server:
+    build:
+      context: log-server/
+      args:
+        - "TARGET_PORT=${TARGET_PORT}"
+        - "TARGET_HOST=${TARGET_HOST}"
+        - "PORT=4200"
+    entrypoint:
+      - node
+      - index.js
+    tty: true
+    ports:
+      - "4200:4200"
