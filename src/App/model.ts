@@ -32,6 +32,11 @@ interface ControlMessageExit {
   action: "exit";
 }
 
+interface ControlMessageLogin {
+  action: "login";
+  sockId: string;
+}
+
 export type ControlMessage =
   | ControlMessageTextToSpeechStart
   | ControlMessageTextToSpeechStop
@@ -39,4 +44,5 @@ export type ControlMessage =
   | ControlMessageSpeechToTextStop
   | ControlMessageImage
   | ControlMessageStart
-  | ControlMessageExit;
+  | ControlMessageExit
+  | ControlMessageLogin;

@@ -83,11 +83,13 @@ export const authCheck = ({
 export const processControl = ({
   setResult,
   setImage,
+  setSockId,
   setStartRecognition,
   setStartPresentation,
 }: {
   setResult: (value: string) => void;
   setImage: (value: string) => void;
+  setSockId: (value: string) => void;
   setStartRecognition: (value: StartRecoginitionProps) => void;
   setStartPresentation: (value: StartPresentationProps) => void;
 }) => {
@@ -95,6 +97,9 @@ export const processControl = ({
   const onmessage = async (e: MessageEvent) => {
     const data = JSON.parse(e.data) as ControlMessage;
     switch (data.action) {
+      case "login":
+        setSockId(data.sockId);
+        break;
       case "text-to-speech/start":
         setResult(data.utterance);
         await speechSynthesis(data.utterance);
@@ -132,6 +137,12 @@ export const processControl = ({
         break;
     }
   };
+  sock.onopen = function () {
+    console.log("open");
+  };
+  sock.onclose = function () {
+    console.log("close");
+  };
   sock.addEventListener("message", onmessage);
   return () => {
     sock.removeEventListener("message", onmessage);
@@ -150,7 +161,6 @@ export const processRecognition = async ({
   if (speechRecognition !== undefined) {
     if (startRecognition.state) {
       const { timeout } = startRecognition;
-      await axios.post("/recognition", { state: "start" });
       let recordingTranscript = true;
       let doneTranscript = false;
       const timeoutTimer =
@@ -183,7 +193,6 @@ export const processRecognition = async ({
             transcript: "[timeout]",
           });
         }
-        await axios.post("/recognition", { state: "end" });
       };
       try {
         speechRecognition.start();

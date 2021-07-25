@@ -36,7 +36,6 @@ export const RecognitionButton: React.FC<{
 
 export const Presentation: React.FC<PresentationProps> = ({
   start,
-  startRecognition,
   result,
   image,
   onStartPresentation,
@@ -45,9 +44,6 @@ export const Presentation: React.FC<PresentationProps> = ({
   onStopRecognition,
 }) => {
   const history = useHistory();
-
-  console.log(`start ${start}`);
-
   return (
     <>
       {!start ? (

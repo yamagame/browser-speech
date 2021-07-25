@@ -7,9 +7,9 @@ const io = sockjs.createServer();
 
 const broadcastConnections = {};
 const broadcast = (payload) => {
-  for (const id in broadcastConnections) {
-    // console.log(payload.username);
-    broadcastConnections[id].write(JSON.stringify(payload));
+  const { sockId } = payload;
+  if (broadcastConnections[sockId]) {
+    broadcastConnections[sockId].write(JSON.stringify(payload));
   }
 };
 
@@ -64,81 +64,87 @@ app.post("/login", (req, res) => {
   res.sendStatus(403);
 });
 
-// echo-server -> browser
+// scenario-manager -> browser
 app.post("/speech-to-text/start", (req, res) => {
-  const { timeout, username } = req.body;
+  const { timeout, username, sockId } = req.body;
   broadcast({
     action: "speech-to-text/start",
     username,
     timeout,
+    sockId,
   });
   res.sendStatus(200);
 });
 
-// echo-server -> browser
+// scenario-manager -> browser
 app.post("/speech-to-text/stop", (req, res) => {
-  const { username } = req.body;
+  const { username, sockId } = req.body;
   broadcast({
     action: "speech-to-text/stop",
     username,
+    sockId,
   });
   res.sendStatus(200);
 });
 
-// echo-server -> browser
+// scenario-manager -> browser
 app.post("/display/image", (req, res) => {
-  const { image, username } = req.body;
+  const { image, username, sockId } = req.body;
   broadcast({
     action: "image",
     username,
     image,
+    sockId,
   });
   res.sendStatus(200);
 });
 
-// echo-server -> browser
+// scenario-manager -> browser
 app.post("/text-to-speech/start", (req, res) => {
-  const { username } = req.body;
+  const { username, sockId } = req.body;
   broadcast({
     ...req.body,
     action: "text-to-speech/start",
     username,
+    sockId,
   });
   res.sendStatus(200);
 });
 
-// echo-server -> browser
+// scenario-manager -> browser
 app.post("/text-to-speech/stop", (req, res) => {
-  const { username } = req.body;
+  const { username, sockId } = req.body;
   broadcast({
     ...req.body,
     action: "text-to-speech/stop",
     username,
+    sockId,
   });
   res.sendStatus(200);
 });
 
-// echo-server -> browser
+// scenario-manager -> browser
 app.post("/start", (req, res) => {
-  const { username } = req.body;
-  broadcast({ ...req.body, action: "start", username });
+  const { username, sockId } = req.body;
+  broadcast({ ...req.body, action: "start", username, sockId });
   res.sendStatus(200);
 });
 
-// echo-server -> browser
+// scenario-manager -> browser
 app.post("/exit", (req, res) => {
-  const { username } = req.body;
-  broadcast({ ...req.body, action: "exit", username });
+  const { username, sockId } = req.body;
+  broadcast({ ...req.body, action: "exit", username, sockId });
   res.sendStatus(200);
 });
 
-// browser -> echo-server
+// browser -> scenario-manager
 app.post("/transcript", isLogined, (req, res) => {
-  const { username } = req.session;
+  const { username, sockId } = req.session;
   if (scenarioManagerHost)
     axios.post(`${scenarioManagerHost}/transcript`, {
       ...req.body,
       username,
+      sockId,
     });
   res.sendStatus(200);
 });
@@ -148,35 +154,28 @@ app.post("/logout", (req, res) => {
   res.sendStatus(200);
 });
 
-// browser -> echo-server
+// browser -> scenario-manager
 app.post("/init", (req, res) => {
   const { username } = req.session;
+  const { sockId } = req.body;
+  req.session.sockId = sockId;
   if (scenarioManagerHost)
     axios.post(`${scenarioManagerHost}/init`, {
       ...req.body,
       username,
+      sockId,
     });
   res.sendStatus(200);
 });
 
-// browser -> echo-server
-app.post("/recognition", (req, res) => {
-  const { username } = req.session;
-  if (scenarioManagerHost)
-    axios.post(`${scenarioManagerHost}/recognition`, {
-      ...req.body,
-      username,
-    });
-  res.sendStatus(200);
-});
-
-// browser -> echo-server
+// browser -> scenario-manager
 app.post("/ready", (req, res) => {
-  const { username } = req.session;
+  const { username, sockId } = req.session;
   if (scenarioManagerHost)
     axios.post(`${scenarioManagerHost}/ready`, {
       ...req.body,
       username,
+      sockId,
     });
   res.sendStatus(200);
 });
@@ -190,6 +189,7 @@ io.installHandlers(httpServer, { prefix: "/controller" });
 io.on("connection", (conn) => {
   console.log("a user connected");
   broadcastConnections[conn.id] = conn;
+  conn.write(JSON.stringify({ action: "login", sockId: conn.id }));
   conn.on("disconnect", () => {
     delete broadcastConnections[conn.id];
     console.log("user disconnected");

@@ -10,15 +10,7 @@ const commandDir = process.env.COMMAND_DIR || path.join(__dirname, "command");
 const loggerHost = process.env.LOGGER_HOST || null;
 
 const { DoraEngine } = require("modules/DoraEngine");
-const robot = new DoraEngine({
-  scenarioDir,
-  backendHost,
-  robotServer,
-  scenarioHost,
-  scenarioPort: `${port}`,
-  loggerHost,
-  commandDir,
-});
+const robotBrains = {};
 
 const app = express();
 
@@ -36,45 +28,49 @@ app.use((req, res, next) => {
 
 // シナリオスタート
 app.post("/init", async (req, res) => {
-  const username = req.body.username;
-  robot.init(username);
-  res.sendStatus(200);
-});
-
-// 音声認識ステータス通知
-app.post("/recognition", async (req, res) => {
+  const { username, sockId } = req.body;
+  robotBrains[sockId || "robot"] = new DoraEngine({
+    scenarioDir,
+    backendHost,
+    robotServer,
+    scenarioHost,
+    scenarioPort: `${port}`,
+    loggerHost,
+    commandDir,
+  });
+  robotBrains[sockId || "robot"].init(username, sockId);
   res.sendStatus(200);
 });
 
 // シナリオ継続通知
 app.post("/ready", async (req, res) => {
-  let username = req.body.username;
+  const { username, sockId } = req.body;
   if (!username) {
     res.sendStatus(200);
     return;
   }
-  robot.ready(username);
+  robotBrains[sockId || "robot"].ready(username);
   res.sendStatus(200);
 });
 
 // シナリオ継続通知
 app.post("/robotReady", async (req, res) => {
-  let username = req.body.username;
+  const { sockId } = req.body;
+  let { username } = req.body;
   if (!username && req.body.payload) {
     const m = req.body.payload.match(/username:(.+)/);
     if (m) {
       username = m[1];
     }
   }
-  robot.ready(username);
+  robotBrains[sockId || "robot"].ready(username);
   res.sendStatus(200);
 });
 
 // 音声認識結果
 app.post("/transcript", async (req, res) => {
-  const username = req.body.username;
-  const { transcript } = req.body;
-  robot.think(username, transcript);
+  const { transcript, username, sockId } = req.body;
+  robotBrains[sockId || "robot"].think(username, transcript);
   res.sendStatus(200);
 });
 

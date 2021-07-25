@@ -68,7 +68,7 @@ export class DoraEngine {
     this.options = { ...this.options, ...options };
   }
 
-  async init(username: string) {
+  async init(username: string, sockId: string) {
     const scenarioPath = (filename) =>
       path.join(this.options.scenarioDir, filename);
 
@@ -92,11 +92,13 @@ export class DoraEngine {
           await axios.post(`${robotServer}/speech`, {
             payload: message,
             username,
+            sockId,
           });
         } else if (backendHost) {
           await axios.post(`${backendHost}/text-to-speech/start`, {
             utterance: message,
             username,
+            sockId,
           });
         }
       }
@@ -105,6 +107,7 @@ export class DoraEngine {
           await axios.post(`${backendHost}/text-to-speech/stop`, {
             utterance: message,
             username,
+            sockId,
           });
         }
       }
@@ -117,6 +120,7 @@ export class DoraEngine {
           await axios.post(`${backendHost}/speech-to-text/start`, {
             username,
             timeout,
+            sockId,
           });
         }
       }
@@ -125,6 +129,7 @@ export class DoraEngine {
           await axios.post(`${backendHost}/speech-to-text/stop`, {
             username,
             timeout,
+            sockId,
           });
         }
       }
@@ -136,6 +141,7 @@ export class DoraEngine {
         await axios.post(`${backendHost}/display/image`, {
           username,
           image,
+          sockId,
         });
       }
       if (this.robots[username]) this.robots[username].next = callback;
@@ -199,7 +205,7 @@ export class DoraEngine {
 
     let run_scenario = true;
 
-    const res = { username };
+    const res = { username, sockId };
     await axios.post(`${backendHost}/start`, res);
 
     const play = async ({ startScenario, range, username }, defaults) => {
@@ -269,7 +275,7 @@ export class DoraEngine {
                 );
               }
             } else if (backendHost) {
-              const res = { username, ...msg };
+              const res = { username, sockId, ...msg };
               console.log(JSON.stringify(res, null, "  "));
               await axios.post(`${backendHost}/exit`, res);
             }

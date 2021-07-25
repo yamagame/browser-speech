@@ -177,10 +177,13 @@ export const Nlp = function (DORA, config = {}) {
   function Logger(node: Node, options) {
     const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", async function (msg) {
+      const { username } = msg;
       const { loggerHost } = node.flow.options;
       prepare(msg);
       const makeLogData = (message, category) => {
-        const data = {} as any;
+        const data = {
+          名前: username,
+        } as any;
         const m = message.match("(.+)：(.*)");
         if (m) {
           data[m[1]] = m[2];

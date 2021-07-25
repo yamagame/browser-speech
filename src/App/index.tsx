@@ -27,6 +27,7 @@ function App() {
     initialStartRecoginition
   );
   const [image, setImage] = React.useState("");
+  const [sockId, setSockId] = React.useState("");
   const [result, setResult] = React.useState("");
   const [loading, setLoading] = React.useState(true);
 
@@ -42,6 +43,7 @@ function App() {
       processControl({
         setResult,
         setImage,
+        setSockId,
         setStartRecognition,
         setStartPresentation,
       }),
@@ -55,7 +57,7 @@ function App() {
       setResult,
       setStartRecognition,
     });
-  }, [startRecognition]);
+  }, [sockId, startRecognition]);
 
   const onChangeUsername = (e: any) => {
     setResult("");
@@ -81,7 +83,7 @@ function App() {
             onStartPresentation={async () => {
               setResult("");
               if (!startPresentation) speechSynthesis("");
-              await axios.post("/init");
+              await axios.post("/init", { username, sockId });
             }}
             onStopPresentation={() => {
               setResult("");

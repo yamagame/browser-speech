@@ -1,7 +1,9 @@
 ご用件をどうぞ
 :loop
+/nlp.logger/質問：{{payload}}
 /timeout/30
 /speech-to-text
+/nlp.logger/回答：{{payload}}
 /if/テスト/:test
 /if/こんにちは/:hello1
 /if/こんばんは/:hello2
