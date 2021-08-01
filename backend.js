@@ -42,6 +42,29 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static("front"));
 
+app.get("/image/:image(*)", (req, res) => {
+  const proxyRequestHeaders = Object.assign({}, req.headers);
+  console.log(proxyRequestHeaders);
+  if (proxyRequestHeaders) {
+    for (let key of ["host", "authorization", "cookie"]) {
+      delete proxyRequestHeaders[key];
+    }
+  }
+  const url = `${scenarioManagerHost}/${req.params.image}`;
+  axios({
+    method: "get",
+    url,
+    responseType: "stream",
+    headers: proxyRequestHeaders || {},
+  })
+    .then(function (response) {
+      response.data.pipe(res);
+    })
+    .catch((err) => {
+      res.sendStatus(err.response.status);
+    });
+});
+
 app.use((req, res, next) => {
   console.log(req.path);
   console.log(new Date());

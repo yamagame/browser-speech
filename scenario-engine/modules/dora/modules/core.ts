@@ -1208,7 +1208,7 @@ export const Core = function (DORA, config = {}) {
         message = utils.mustache.render(message, msg);
       }
       if (![/^http.+/, /^:.+/, /^\/\/.+/].some((re) => message.match(re))) {
-        message = `${host}/${message}`;
+        message = `image/${message}`;
       }
       socket.emit(
         "display/image",

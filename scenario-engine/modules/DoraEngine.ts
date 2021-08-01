@@ -233,6 +233,7 @@ export class DoraEngine {
             scenarioDir: this.options.scenarioDir,
             applicationType: robotServer !== null ? "robot" : "browser",
             robotServer,
+            backendHost,
             scenarioHost,
             scenarioPort,
             ipAddress: ip.address(),
