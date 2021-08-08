@@ -55,10 +55,11 @@
 
 :年齢-タイムアウト
 /loop/.loop.年齢-繰り返し/:年齢-再問い合わせ
+/nlp.save/年齢
 /goto/:年齢-END
 
 :年齢-再問い合わせ
-/text-to-speech.random/お歳はいくつですか？/何歳ですか？
+/text-to-speech.random/何歳ですか？/お歳はいくつですか？
 /goto/:年齢-開始
 
 :年齢-復唱
