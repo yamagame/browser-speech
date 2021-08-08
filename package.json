@@ -29,8 +29,8 @@
     "start": "concurrently \"SCENARIO_MANAGER_HOST=http://localhost:5200 nodemon --config nodemon.json\" \"craco start\"",
     "front": "craco start",
     "backend": "nodemon --config nodemon.json",
-    "echo-server": "BACKEND_HOST=http://localhost:4100 node scenario-engine/index.js",
-    "server": "node backend/index.js",
+    "scenario-engine": "BACKEND_HOST=http://localhost:4100 node scenario-engine/index.js",
+    "server": "SCENARIO_MANAGER_HOST=http://localhost:5200 node backend.js",
     "build": "BUILD_PATH=./front craco build",
     "test": "craco test",
     "eject": "react-scripts eject"
