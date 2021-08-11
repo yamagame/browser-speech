@@ -1,2 +1,2 @@
 #!/bin/bash
-npm run debug
+npm run debug | tee ../../log-server.log
