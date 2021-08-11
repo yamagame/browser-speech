@@ -1,6 +1,6 @@
 /gosub/:INIT-ROBOT
 //run/vegetable.txt
-//run/hasegawa.txt
+/run/hasegawa.txt
 /run/welcome.txt
 /end
 
