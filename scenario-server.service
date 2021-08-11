@@ -1,0 +1,12 @@
+[Unit]
+Description=Scenario Server Service
+After=scenario-engine.service
+
+[Service]
+ExecStart=/bin/bash -c './scenario-server.sh'
+WorkingDirectory=/home/pi/browser-speech
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target

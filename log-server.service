@@ -1,0 +1,12 @@
+[Unit]
+Description=Log Server Service
+After=scenario-server.service
+
+[Service]
+ExecStart=/bin/bash -c './log-server.sh'
+WorkingDirectory=/home/pi/browser-speech/log-server
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target
