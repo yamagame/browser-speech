@@ -10,7 +10,7 @@ const commandDir = process.env.COMMAND_DIR || path.join(__dirname, "command");
 const loggerHost = process.env.LOGGER_HOST || null;
 
 const { DoraEngine } = require("modules/DoraEngine");
-const robotBrains = {};
+const robotBrains = {} as { [index: string]: typeof DoraEngine };
 
 const app = express();
 
@@ -63,7 +63,7 @@ app.post("/robotReady", async (req, res) => {
       username = m[1];
     }
   }
-  robotBrains[sockId || "robot"].ready(username);
+  Object.entries(robotBrains).some(([k, v]) => v.ready(username));
   res.sendStatus(200);
 });
 
