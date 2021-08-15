@@ -316,4 +316,20 @@ export class DoraEngine {
       delete this.robots[username].next;
     }
   }
+
+  reset(username: string) {
+    if (this.robots[username]) {
+      delete this.robots[username].next;
+      const { robotServer } = this.options;
+      if (robotServer) {
+        const stop = async () => {
+          await axios.post(`${robotServer}/command`, {
+            type: "scenario",
+            action: "sound-stop",
+          });
+        };
+        stop();
+      }
+    }
+  }
 }

@@ -99,6 +99,7 @@ export const processControl = ({
     switch (data.action) {
       case "login":
         setSockId(data.sockId);
+        await axios.post("/reset");
         break;
       case "text-to-speech/start":
         setResult(data.utterance);

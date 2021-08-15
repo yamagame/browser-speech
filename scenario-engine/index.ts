@@ -12,6 +12,10 @@ const loggerHost = process.env.LOGGER_HOST || null;
 const { DoraEngine } = require("modules/DoraEngine");
 const robotBrains = {} as { [index: string]: typeof DoraEngine };
 
+const socketIdString = (sockId) => {
+  return robotServer !== null ? "robot" : sockId;
+};
+
 const app = express();
 
 app.use(express.json());
@@ -29,7 +33,7 @@ app.use((req, res, next) => {
 // シナリオスタート
 app.post("/init", async (req, res) => {
   const { username, sockId } = req.body;
-  robotBrains[sockId || "robot"] = new DoraEngine({
+  robotBrains[socketIdString(sockId)] = new DoraEngine({
     scenarioDir,
     backendHost,
     robotServer,
@@ -38,7 +42,14 @@ app.post("/init", async (req, res) => {
     loggerHost,
     commandDir,
   });
-  robotBrains[sockId || "robot"].init(username, sockId);
+  robotBrains[socketIdString(sockId)].init(username, sockId);
+  res.sendStatus(200);
+});
+
+// リセット
+app.post("/reset", async (req, res) => {
+  const { username, sockId } = req.body;
+  robotBrains[socketIdString(sockId)].reset(username);
   res.sendStatus(200);
 });
 
@@ -49,7 +60,7 @@ app.post("/ready", async (req, res) => {
     res.sendStatus(200);
     return;
   }
-  robotBrains[sockId || "robot"].ready(username);
+  robotBrains[socketIdString(sockId)].ready(username);
   res.sendStatus(200);
 });
 
@@ -63,14 +74,14 @@ app.post("/robotReady", async (req, res) => {
       username = m[1];
     }
   }
-  Object.entries(robotBrains).some(([k, v]) => v.ready(username));
+  robotBrains[socketIdString(sockId)].ready(username);
   res.sendStatus(200);
 });
 
 // 音声認識結果
 app.post("/transcript", async (req, res) => {
   const { transcript, username, sockId } = req.body;
-  robotBrains[sockId || "robot"].think(username, transcript);
+  robotBrains[socketIdString(sockId)].think(username, transcript);
   res.sendStatus(200);
 });
 
@@ -79,4 +90,7 @@ app.listen(port, () => {
   console.log(`robotServer: ${robotServer}`);
   console.log(`scenarioDir: ${scenarioDir}`);
   console.log(`scenario-engine app listening at ${scenarioHost}:${port}`);
+  // setInterval(() => {
+  //   console.log(Object.keys(robotBrains));
+  // }, 3000);
 });

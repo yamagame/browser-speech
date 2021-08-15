@@ -26,9 +26,9 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "concurrently \"SCENARIO_MANAGER_HOST=http://localhost:5200 nodemon --config nodemon.json\" \"craco start\"",
+    "start": "concurrently \"SCENARIO_MANAGER_HOST=http://localhost:5200 nodemon --delay 1000ms --config nodemon.json\" \"craco start\"",
     "front": "craco start",
-    "backend": "nodemon --config nodemon.json",
+    "backend": "SCENARIO_MANAGER_HOST=http://localhost:5200 nodemon --delay 1000ms --config nodemon.json",
     "scenario-engine": "BACKEND_HOST=http://localhost:4100 node scenario-engine/index.js",
     "server": "SCENARIO_MANAGER_HOST=http://localhost:5200 node backend.js",
     "build": "BUILD_PATH=./front craco build",

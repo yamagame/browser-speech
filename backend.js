@@ -87,7 +87,21 @@ app.post("/login", (req, res) => {
   res.sendStatus(403);
 });
 
-// scenario-manager -> browser
+// browser -> scenario-engine
+app.post("/reset", (req, res) => {
+  const { username } = req.session;
+  const { sockId } = req.body;
+  req.session.sockId = sockId;
+  if (scenarioManagerHost)
+    axios.post(`${scenarioManagerHost}/reset`, {
+      ...req.body,
+      username,
+      sockId,
+    });
+  res.sendStatus(200);
+});
+
+// scenario-engine -> browser
 app.post("/speech-to-text/start", (req, res) => {
   const { timeout, username, sockId } = req.body;
   broadcast({
@@ -99,7 +113,7 @@ app.post("/speech-to-text/start", (req, res) => {
   res.sendStatus(200);
 });
 
-// scenario-manager -> browser
+// scenario-engine -> browser
 app.post("/speech-to-text/stop", (req, res) => {
   const { username, sockId } = req.body;
   broadcast({
@@ -110,7 +124,7 @@ app.post("/speech-to-text/stop", (req, res) => {
   res.sendStatus(200);
 });
 
-// scenario-manager -> browser
+// scenario-engine -> browser
 app.post("/display/image", (req, res) => {
   const { image, username, sockId } = req.body;
   broadcast({
@@ -122,7 +136,7 @@ app.post("/display/image", (req, res) => {
   res.sendStatus(200);
 });
 
-// scenario-manager -> browser
+// scenario-engine -> browser
 app.post("/text-to-speech/start", (req, res) => {
   const { username, sockId } = req.body;
   broadcast({
@@ -134,7 +148,7 @@ app.post("/text-to-speech/start", (req, res) => {
   res.sendStatus(200);
 });
 
-// scenario-manager -> browser
+// scenario-engine -> browser
 app.post("/text-to-speech/stop", (req, res) => {
   const { username, sockId } = req.body;
   broadcast({
@@ -146,21 +160,21 @@ app.post("/text-to-speech/stop", (req, res) => {
   res.sendStatus(200);
 });
 
-// scenario-manager -> browser
+// scenario-engine -> browser
 app.post("/start", (req, res) => {
   const { username, sockId } = req.body;
   broadcast({ ...req.body, action: "start", username, sockId });
   res.sendStatus(200);
 });
 
-// scenario-manager -> browser
+// scenario-engine -> browser
 app.post("/exit", (req, res) => {
   const { username, sockId } = req.body;
   broadcast({ ...req.body, action: "exit", username, sockId });
   res.sendStatus(200);
 });
 
-// browser -> scenario-manager
+// browser -> scenario-engine
 app.post("/transcript", isLogined, (req, res) => {
   const { username, sockId } = req.session;
   if (scenarioManagerHost)
@@ -177,7 +191,7 @@ app.post("/logout", (req, res) => {
   res.sendStatus(200);
 });
 
-// browser -> scenario-manager
+// browser -> scenario-engine
 app.post("/init", (req, res) => {
   const { username } = req.session;
   const { sockId } = req.body;
@@ -191,7 +205,7 @@ app.post("/init", (req, res) => {
   res.sendStatus(200);
 });
 
-// browser -> scenario-manager
+// browser -> scenario-engine
 app.post("/ready", (req, res) => {
   const { username, sockId } = req.session;
   if (scenarioManagerHost)
@@ -222,4 +236,8 @@ io.on("connection", (conn) => {
 httpServer.listen(port, () => {
   console.log(`Scenario Manager: ${scenarioManagerHost}`);
   console.log(`browser-speech app listening at ${backendHost}:${port}`);
+});
+
+process.once("SIGUSR2", function () {
+  process.kill(process.pid, "SIGUSR2");
 });
