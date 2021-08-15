@@ -40,3 +40,17 @@ $ TARGET_PORT=7010 TARGET_HOST=192.168.11.153 docker-compose up
 ```
 http://localhost:4100
 ```
+
+## メモ：ロボット連携モードでの起動
+
+ロボットを起動してロボットアクセスポイントに接続します。
+あとは下記の２つのコマンドを実行します。
+
+```bash
+$ cd scenario-engine
+$ npm run robot
+```
+
+```bash
+$ npm start
+```
