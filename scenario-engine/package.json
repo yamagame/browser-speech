@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "tsc -w -p tsconfig.json & COMMAND_DIR=`pwd`/command SCENARIO_DIR=`pwd`/scenario LOGGER_HOST=http://localhost:4200/logger BACKEND_HOST=http://localhost:4100 NODE_PATH=./dist nodemon --config nodemon.json",
-    "robot": "tsc -w -p tsconfig.json & COMMAND_DIR=`pwd`/command SCENARIO_DIR=`pwd`/scenario LOGGER_HOST=http://localhost:4200/logger ROBOT_SERVER=http://cardbot.local:3090 BACKEND_HOST=http://localhost:4100 NODE_PATH=./dist nodemon --config nodemon.json",
+    "robot": "tsc -w -p tsconfig.json & COMMAND_DIR=`pwd`/command SCENARIO_DIR=`pwd`/scenario LOGGER_HOST=http://localhost:4200/logger ROBOT_SERVER=http://localhost:3090 BACKEND_HOST=http://localhost:4100 NODE_PATH=./dist nodemon --config nodemon.json",
     "build": "tsc -p tsconfig.json",
     "test": "NODE_PATH=dist jest"
   },
