@@ -7,7 +7,7 @@ function Add(node, msg, options, isTemplated, sign) {
     message = utils.mustache.render(message, msg);
   }
   const params = message.split("/");
-  const field = params[0].split(".").filter((v) => v !== "");
+  const field = params[0].split(".").filter(v => v !== "");
   const result = node.getField(msg, field);
   if (result !== null) {
     const { object, key } = result;
@@ -94,7 +94,7 @@ export const EmitTextToSpeech = (node: Node, msg, message) => {
         },
         node,
       },
-      (res) => {
+      res => {
         if (!node.isAlive()) return;
         msg.payload = message;
         node.send(msg);
@@ -302,7 +302,7 @@ export const Core = function (DORA, config = {}) {
         }
       }
       const n = node._randtable[node._counter];
-      const t = node.wires.map((v) => {
+      const t = node.wires.map(v => {
         return null;
       });
       t[n] = msg;
@@ -324,7 +324,7 @@ export const Core = function (DORA, config = {}) {
       throw new Error("ラベルを指定してください。");
     node._counter = 0;
     node.on("input", function (msg) {
-      const t = node.wires.map((v) => {
+      const t = node.wires.map(v => {
         return null;
       });
       t[node._counter] = msg;
@@ -401,7 +401,7 @@ export const Core = function (DORA, config = {}) {
             },
             node,
           },
-          (res) => {
+          res => {
             if (!node.isAlive()) return;
             node.send(msg);
           }
@@ -420,7 +420,7 @@ export const Core = function (DORA, config = {}) {
   function CoreSet(node, options) {
     const isTemplated = (options || "").indexOf("{{") != -1;
     const p = options.split("/");
-    const field = p[0].split(".").filter((v) => v !== "");
+    const field = p[0].split(".").filter(v => v !== "");
     if (p.length < 2) {
       throw new Error("パラメータがありません。");
     }
@@ -428,7 +428,7 @@ export const Core = function (DORA, config = {}) {
       let t = msg;
       let key = null;
       let v = msg;
-      field.forEach((f) => {
+      field.forEach(f => {
         if (typeof t === "undefined" || typeof t !== "object") {
           v[key] = {};
           t = v[key];
@@ -438,7 +438,7 @@ export const Core = function (DORA, config = {}) {
         t = t[f];
       });
       if (typeof v !== "undefined" && typeof key !== "undefined") {
-        const val = (v) => {
+        const val = v => {
           if (utils.isNumeric(v)) {
             if (v.indexOf(".") >= 0) {
               return parseFloat(v);
@@ -454,7 +454,7 @@ export const Core = function (DORA, config = {}) {
         v[key] = val(p.slice(1).join("/"));
       }
       if (msg.labels) {
-        Object.keys(msg.labels).forEach((key) => {
+        Object.keys(msg.labels).forEach(key => {
           const v = msg.labels[key];
           this.flow.labels[key] = v;
         });
@@ -471,7 +471,7 @@ export const Core = function (DORA, config = {}) {
   function CoreSetString(node, options) {
     const isTemplated = (options || "").indexOf("{{") != -1;
     const p = options.split("/");
-    const field = p[0].split(".").filter((v) => v !== "");
+    const field = p[0].split(".").filter(v => v !== "");
     if (p.length < 2) {
       throw new Error("パラメータがありません。");
     }
@@ -479,7 +479,7 @@ export const Core = function (DORA, config = {}) {
       let t = msg;
       let key = null;
       let v = msg;
-      field.forEach((f) => {
+      field.forEach(f => {
         if (typeof t === "undefined" || typeof t !== "object") {
           v[key] = {};
           t = v[key];
@@ -496,7 +496,7 @@ export const Core = function (DORA, config = {}) {
         v[key] = message;
       }
       if (msg.labels) {
-        Object.keys(msg.labels).forEach((key) => {
+        Object.keys(msg.labels).forEach(key => {
           const v = msg.labels[key];
           this.flow.labels[key] = v;
         });
@@ -513,7 +513,7 @@ export const Core = function (DORA, config = {}) {
   function CoreSetNumber(node, options) {
     const isTemplated = (options || "").indexOf("{{") != -1;
     const p = options.split("/");
-    const field = p[0].split(".").filter((v) => v !== "");
+    const field = p[0].split(".").filter(v => v !== "");
     if (p.length < 2) {
       throw new Error("パラメータがありません。");
     }
@@ -521,7 +521,7 @@ export const Core = function (DORA, config = {}) {
       let t = msg;
       let key = null;
       let v = msg;
-      field.forEach((f) => {
+      field.forEach(f => {
         if (typeof t === "undefined" || typeof t !== "object") {
           v[key] = {};
           t = v[key];
@@ -531,7 +531,7 @@ export const Core = function (DORA, config = {}) {
         t = t[f];
       });
       if (typeof v !== "undefined" && typeof key !== "undefined") {
-        const val = (v) => {
+        const val = v => {
           if (utils.isNumeric(v)) {
             if (v.indexOf(".") >= 0) {
               return parseFloat(v);
@@ -548,7 +548,7 @@ export const Core = function (DORA, config = {}) {
         v[key] = val(message);
       }
       if (msg.labels) {
-        Object.keys(msg.labels).forEach((key) => {
+        Object.keys(msg.labels).forEach(key => {
           const v = msg.labels[key];
           this.flow.labels[key] = v;
         });
@@ -567,7 +567,7 @@ export const Core = function (DORA, config = {}) {
     const field = p[0].split(".");
     node.on("input", async function (msg) {
       let t = msg;
-      field.forEach((f) => {
+      field.forEach(f => {
         if (f !== "") {
           if (typeof t !== "undefined") {
             t = t[f];
@@ -611,7 +611,7 @@ export const Core = function (DORA, config = {}) {
       const getField = (msg, field) => {
         let val = msg;
         let key = null;
-        field.split(".").forEach((f) => {
+        field.split(".").forEach(f => {
           if (key) {
             if (
               typeof val[key] === "undefined" ||
@@ -764,7 +764,7 @@ export const Core = function (DORA, config = {}) {
           },
           node,
         },
-        (res) => {
+        res => {
           msg.timestamp = new Date();
           if (!node.recording) return;
           if (!node.isAlive()) return;
@@ -820,7 +820,7 @@ export const Core = function (DORA, config = {}) {
           },
           node,
         },
-        (res) => {
+        res => {
           if (!node.recording) return;
           if (!node.isAlive()) return;
           node.recording = false;
@@ -861,7 +861,7 @@ export const Core = function (DORA, config = {}) {
           },
           node,
         },
-        (res) => {
+        res => {
           if (!node.isAlive()) return;
           node.next(msg);
         }
@@ -893,7 +893,7 @@ export const Core = function (DORA, config = {}) {
           },
           node,
         },
-        (res) => {
+        res => {
           if (!node.isAlive()) return;
           node.join();
           node.next(msg);
@@ -959,7 +959,7 @@ export const Core = function (DORA, config = {}) {
     node.options = options;
     node.on("input", async function (msg) {
       const opt: { range? } = {};
-      Object.keys(node.flow.options).forEach((key) => {
+      Object.keys(node.flow.options).forEach(key => {
         opt[key] = node.flow.options[key];
       });
       opt.range = {
@@ -1071,7 +1071,7 @@ export const Core = function (DORA, config = {}) {
     }
     node.on("input", async function (msg) {
       let t = msg;
-      field.forEach((f) => {
+      field.forEach(f => {
         if (f !== "") {
           if (typeof t !== "undefined") {
             t = t[f];
@@ -1097,7 +1097,7 @@ export const Core = function (DORA, config = {}) {
   function Load(node, options) {
     const isTemplated = (options || "").indexOf("{{") != -1;
     const p = options ? options.split("/") : [];
-    let field = p.length > 0 ? p[0].split(".").filter((v) => v !== "") : [];
+    let field = p.length > 0 ? p[0].split(".").filter(v => v !== "") : [];
     if (p.length < 1) {
       field = ["defaults"];
     }
@@ -1109,7 +1109,7 @@ export const Core = function (DORA, config = {}) {
       let t = msg;
       let key = null;
       let v = msg;
-      field.forEach((f) => {
+      field.forEach(f => {
         if (typeof t === "undefined" || typeof t !== "object") {
           v[key] = {};
           t = v[key];
@@ -1122,7 +1122,7 @@ export const Core = function (DORA, config = {}) {
         v[key] = response.data;
       }
       if (msg.labels) {
-        Object.keys(msg.labels).forEach((key) => {
+        Object.keys(msg.labels).forEach(key => {
           const v = msg.labels[key];
           this.flow.labels[key] = v;
         });
@@ -1155,7 +1155,7 @@ export const Core = function (DORA, config = {}) {
             },
             node,
           },
-          (res) => {
+          res => {
             if (!node.isAlive()) return;
             node.next(msg);
           }
@@ -1174,7 +1174,7 @@ export const Core = function (DORA, config = {}) {
   function Timeout(node: Node, options) {
     const isTemplated = (options || "").indexOf("{{") != -1;
     node.on("input", async function (msg) {
-      const val = (v) => {
+      const val = v => {
         if (utils.isNumeric(v)) {
           if (v.indexOf(".") >= 0) {
             return parseFloat(v);
@@ -1207,7 +1207,7 @@ export const Core = function (DORA, config = {}) {
       if (isTemplated) {
         message = utils.mustache.render(message, msg);
       }
-      if (![/^http.+/, /^:.+/, /^\/\/.+/].some((re) => message.match(re))) {
+      if (![/^http.+/, /^:.+/, /^\/\/.+/].some(re => message.match(re))) {
         message = `image/${message}`;
       }
       socket.emit(
@@ -1222,7 +1222,7 @@ export const Core = function (DORA, config = {}) {
           },
           node,
         },
-        (res) => {}
+        res => {}
       );
       node.next(msg);
     });
@@ -1235,7 +1235,7 @@ export const Core = function (DORA, config = {}) {
    */
   function Loop(node: Node, options) {
     const params = options.split("/");
-    const field = params[0].split(".").filter((v) => v !== "");
+    const field = params[0].split(".").filter(v => v !== "");
     if (params.length > 1) {
       node.nextLabel(params.slice(1).join("/"));
     }
