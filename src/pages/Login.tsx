@@ -23,12 +23,16 @@ export const Login: React.FC<LoginProps> = ({ username, onChangeUsername }) => {
   return (
     <>
       <Input
-        className="m-8"
+        className="m-8 p-4 text-xl"
         value={username}
         placeholder="ユーザー名"
         onChange={onChangeUsername}
       />
-      <Button label={"ログイン"} onClick={onClickLogin}></Button>
+      <Button
+        className="text-gray-500 px-8"
+        label={"ログイン"}
+        onClick={onClickLogin}
+      ></Button>
     </>
   );
 };

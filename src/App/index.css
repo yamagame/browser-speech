@@ -1,3 +1,7 @@
+body {
+  background-color: black;
+}
+
 .control-panel {
   min-height: 100vh;
   display: flex;

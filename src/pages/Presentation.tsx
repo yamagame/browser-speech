@@ -49,13 +49,14 @@ export const Presentation: React.FC<PresentationProps> = ({
       {!start ? (
         <>
           <Button
-            className="m-8"
-            label={"Start Scenario"}
+            className="m-8 p-8 font-bold text-white bg-yellow-500 text-2xl"
+            label={"シナリオを開始する"}
             onClick={() => {
               onStartPresentation();
             }}
           ></Button>
           <Button
+            className="text-gray-500 px-8"
             label={"ログアウト"}
             onClick={() => {
               onStopPresentation();
