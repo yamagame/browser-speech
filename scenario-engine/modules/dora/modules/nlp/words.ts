@@ -817,6 +817,8 @@ export const structure = [
   "催し物",
   "電通大",
   "電気通信大学",
+  "幕張",
+  "展示会場",
 ].sort((a, b) => {
   return b.length - a.length;
 });
