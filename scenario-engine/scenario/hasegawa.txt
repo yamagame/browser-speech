@@ -479,3 +479,5 @@
 お疲れ様でした。
 /nlp.logger
 /nlp.endQuestion
+
+/run/welcome.txt

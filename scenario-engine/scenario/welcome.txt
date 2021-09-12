@@ -1,5 +1,5 @@
-ご用件をどうぞ
 :loop
+/image/title.png
 /nlp.logger/質問：{{payload}}
 /timeout/30
 /speech-to-text
@@ -7,6 +7,7 @@
 /if/テスト/:test
 /if/こんにちは/:hello1
 /if/こんばんは/:hello2
+/if/診断/:hasegawa
 /if/おはよう/:hello3
 /if/[timeout]/:end
 /text-to-speech
@@ -42,4 +43,20 @@
 
 :こんにちは
 こんにちは
+/goto/:loop
+
+:hasegawa
+認知症診断を始めますか？
+/timeout/5
+/speech-to-text
+/if/はじめ/:goto-hasegawa
+/if/はい/:goto-hasegawa
+/if/やめ/:cancel-hasegawa
+/if/[timeout]/:goto-hasegawa
+
+:goto-hasegawa
+/run/hasegawa.txt
+
+:cancel-hasegawa
+ほかにご用件をどうぞ
 /goto/:loop
