@@ -6,7 +6,7 @@ const sockjs = require("sockjs");
 const io = sockjs.createServer();
 
 const broadcastConnections = {};
-const broadcast = (payload) => {
+const broadcast = payload => {
   const { sockId } = payload;
   if (broadcastConnections[sockId]) {
     broadcastConnections[sockId].write(JSON.stringify(payload));
@@ -44,7 +44,6 @@ app.use(express.static("front"));
 
 app.get("/image/:image(*)", (req, res) => {
   const proxyRequestHeaders = Object.assign({}, req.headers);
-  console.log(proxyRequestHeaders);
   if (proxyRequestHeaders) {
     for (let key of ["host", "authorization", "cookie"]) {
       delete proxyRequestHeaders[key];
@@ -60,7 +59,7 @@ app.get("/image/:image(*)", (req, res) => {
     .then(function (response) {
       response.data.pipe(res);
     })
-    .catch((err) => {
+    .catch(err => {
       res.sendStatus(err.response.status);
     });
 });
@@ -223,7 +222,7 @@ app.post("/logger", (req, res) => {
 
 io.installHandlers(httpServer, { prefix: "/controller" });
 
-io.on("connection", (conn) => {
+io.on("connection", conn => {
   console.log("a user connected");
   broadcastConnections[conn.id] = conn;
   conn.write(JSON.stringify({ action: "login", sockId: conn.id }));
