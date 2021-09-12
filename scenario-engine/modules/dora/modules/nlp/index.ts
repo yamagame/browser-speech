@@ -11,7 +11,7 @@ const numberString = "０0１1２2３3４4５5６6７7８8９9";
 const slotPattern = {
   名前: [
     ...familyNames
-      .map((d) => d.slice(1))
+      .map(d => d.slice(1))
       .sort((a, b) => {
         return b[0].length - a[0].length;
       }),
@@ -78,7 +78,7 @@ const convertMatchString = (transcript, re, slot, date: Date) => {
   };
 };
 
-const prepare = (msg) => {
+const prepare = msg => {
   if (!msg.nlp) msg.nlp = {};
   if (!msg.nlp.slot) msg.nlp.slot = {};
   if (!msg.nlp.store) msg.nlp.store = {};
@@ -119,7 +119,7 @@ const getSlot = (msg, options, isTemplated = false) => {
   if (pattern.length > 0) {
     let payload = (msg.payload || "").toString();
     const foundMatch = pattern
-      .map((re) => {
+      .map(re => {
         const result = convertMatchString(payload, re, slot, msg.timestamp);
         if (result) {
           payload = payload.replace(
@@ -129,12 +129,12 @@ const getSlot = (msg, options, isTemplated = false) => {
         }
         return result;
       })
-      .filter((item) => item != null);
+      .filter(item => item != null);
     if (foundMatch.length > 0) {
       msg.nlp.slot[slot] = [...msg.nlp.slot[slot], ...foundMatch];
       msg.match = foundMatch
         .sort((a, b) => a.index - b.index)
-        .map((v) => v.match)
+        .map(v => v.match)
         .join(",");
       msg.matchOne = foundMatch[0].match;
       msg.slot = foundMatch[0].slot;
@@ -306,8 +306,8 @@ export const Nlp = function (DORA, config = {}) {
         }
         const existWords = [];
         Object.keys(msg.nlp.slot)
-          .filter((key) => key !== "")
-          .forEach((key) => {
+          .filter(key => key !== "")
+          .forEach(key => {
             if (msg.nlp.slot[key].length > 0) {
               const lastItem = msg.nlp.slot[key][msg.nlp.slot[key].length - 1];
               const index = (msg.payload || "").indexOf(lastItem.match);
@@ -323,7 +323,7 @@ export const Nlp = function (DORA, config = {}) {
         const matchFail = () => {
           const speechMatchWord = existWords
             .sort((a, b) => a.index - b.index)
-            .map((item) => item.slot)
+            .map(item => item.slot)
             .join(",");
           if (speechMatchWord) {
             msg.slot = speechMatchWord;
@@ -332,8 +332,8 @@ export const Nlp = function (DORA, config = {}) {
         };
         if (
           Object.keys(msg.nlp.slot)
-            .filter((key) => key !== "")
-            .some((key) => {
+            .filter(key => key !== "")
+            .some(key => {
               return msg.nlp.slot[key].length <= 0;
             })
         ) {
@@ -349,7 +349,7 @@ export const Nlp = function (DORA, config = {}) {
               }
               return d;
             })
-            .map((item) => item.slot)
+            .map(item => item.slot)
             .join("");
           const t = msg.nlp.order.join("");
           if (v.indexOf(t) < 0) {
@@ -422,11 +422,11 @@ export const Nlp = function (DORA, config = {}) {
       prepare(msg);
       let values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       const n1 = values[utils.randInteger(0, values.length)];
-      values = values.filter((v) => !(v >= n1 - 1 && v <= n1 + 1));
+      values = values.filter(v => !(v >= n1 - 1 && v <= n1 + 1));
       const n2 = values[utils.randInteger(0, values.length)];
-      values = values.filter((v) => !(v >= n2 - 1 && v <= n2 + 1));
+      values = values.filter(v => !(v >= n2 - 1 && v <= n2 + 1));
       const n3 = values[utils.randInteger(0, values.length)];
-      values = values.filter((v) => !(v >= n3 - 1 && v <= n3 + 1));
+      values = values.filter(v => !(v >= n3 - 1 && v <= n3 + 1));
       const n4 = values[utils.randInteger(0, values.length)];
       msg.hasegawa = {
         ...msg.hasegawa,
@@ -486,7 +486,7 @@ export const Nlp = function (DORA, config = {}) {
         message = utils.mustache.render(message, msg);
       }
       const params = message.split("/");
-      const field = params[0].split(".").filter((v) => v !== "");
+      const field = params[0].split(".").filter(v => v !== "");
       const result = node.getField(msg, field);
       if (result !== null) {
         const { object, key } = result;
@@ -541,7 +541,7 @@ export const Nlp = function (DORA, config = {}) {
           },
           node,
         },
-        (res) => {
+        res => {
           if (timeout) {
             clearTimeout(timeout);
             timeout = null;
