@@ -1,2 +1,2 @@
 #!/bin/bash
-npm start
+npm start | tee ../../scenario-engine.log
