@@ -66,7 +66,9 @@ app.post("/reset", async (req, res) => {
 // クローズ
 app.post("/close", async (req, res) => {
   const { sockId } = req.body;
-  delete robotBrains[socketIdString(sockId)];
+  if (!robotServer) {
+    delete robotBrains[socketIdString(sockId)];
+  }
   res.sendStatus(200);
 });
 
