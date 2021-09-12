@@ -86,20 +86,6 @@ app.post("/login", (req, res) => {
   res.sendStatus(403);
 });
 
-// browser -> scenario-engine
-app.post("/reset", (req, res) => {
-  const { username } = req.session;
-  const { sockId } = req.body;
-  req.session.sockId = sockId;
-  if (scenarioManagerHost)
-    axios.post(`${scenarioManagerHost}/reset`, {
-      ...req.body,
-      username,
-      sockId,
-    });
-  res.sendStatus(200);
-});
-
 // scenario-engine -> browser
 app.post("/speech-to-text/start", (req, res) => {
   const { timeout, username, sockId } = req.body;
@@ -205,6 +191,20 @@ app.post("/init", (req, res) => {
 });
 
 // browser -> scenario-engine
+app.post("/reset", (req, res) => {
+  const { username } = req.session;
+  const { sockId } = req.body;
+  req.session.sockId = sockId;
+  if (scenarioManagerHost)
+    axios.post(`${scenarioManagerHost}/reset`, {
+      ...req.body,
+      username,
+      sockId,
+    });
+  res.sendStatus(200);
+});
+
+// browser -> scenario-engine
 app.post("/ready", (req, res) => {
   const { username, sockId } = req.session;
   if (scenarioManagerHost)
@@ -225,10 +225,15 @@ io.installHandlers(httpServer, { prefix: "/controller" });
 io.on("connection", conn => {
   console.log("a user connected");
   broadcastConnections[conn.id] = conn;
+  console.log(conn.id);
+  console.log(Object.keys(broadcastConnections));
   conn.write(JSON.stringify({ action: "login", sockId: conn.id }));
-  conn.on("disconnect", () => {
+  conn.on("close", () => {
+    axios.post(`${scenarioManagerHost}/close`, {
+      sockId: conn.id,
+    });
     delete broadcastConnections[conn.id];
-    console.log("user disconnected");
+    console.log("closed");
   });
 });
 

@@ -32,14 +32,14 @@ export const speechRecognition = (() => {
 const synth = window.speechSynthesis;
 
 export const speechSynthesis = (text: string) => {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     if (synth) {
       synth.cancel();
       var utterThis = new SpeechSynthesisUtterance(text);
       const voices = synth.getVoices();
       const voice =
-        voices.find((v) => v.name === "Kyoko") ||
-        voices.find((v) => v.lang === "ja-JP");
+        voices.find(v => v.name === "Kyoko") ||
+        voices.find(v => v.lang === "ja-JP");
       if (voice) {
         utterThis.voice = voice;
         utterThis.onend = () => {
@@ -99,7 +99,7 @@ export const processControl = ({
     switch (data.action) {
       case "login":
         setSockId(data.sockId);
-        await axios.post("/reset");
+        await axios.post("/reset", { sockId: data.sockId });
         break;
       case "text-to-speech/start":
         setResult(data.utterance);
@@ -172,7 +172,7 @@ export const processRecognition = async ({
           }
           recordingTranscript = false;
         }, timeout * 1000);
-      speechRecognition.onresult = async (e) => {
+      speechRecognition.onresult = async (e: SpeechRecognitionEvent) => {
         recordingTranscript = false;
         doneTranscript = true;
         setResult(e.results[0][0].transcript);

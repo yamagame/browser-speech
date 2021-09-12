@@ -12,7 +12,7 @@ const loggerHost = process.env.LOGGER_HOST || null;
 const { DoraEngine } = require("modules/DoraEngine");
 const robotBrains = {} as { [index: string]: typeof DoraEngine };
 
-const socketIdString = (sockId) => {
+const socketIdString = sockId => {
   return robotServer !== null ? "robot" : sockId;
 };
 
@@ -30,18 +30,26 @@ app.use((req, res, next) => {
   next();
 });
 
+const CreateDoraEngine = sockId => {
+  if (!robotBrains[socketIdString(sockId)]) {
+    robotBrains[socketIdString(sockId)] = new DoraEngine({
+      scenarioDir,
+      backendHost,
+      robotServer,
+      scenarioHost,
+      scenarioPort: `${port}`,
+      loggerHost,
+      commandDir,
+    });
+  }
+};
+
 // シナリオスタート
 app.post("/init", async (req, res) => {
   const { username, sockId } = req.body;
-  robotBrains[socketIdString(sockId)] = new DoraEngine({
-    scenarioDir,
-    backendHost,
-    robotServer,
-    scenarioHost,
-    scenarioPort: `${port}`,
-    loggerHost,
-    commandDir,
-  });
+  console.log(Object.keys(robotBrains));
+  console.log(socketIdString(sockId));
+  CreateDoraEngine(sockId);
   robotBrains[socketIdString(sockId)].init(username, sockId);
   res.sendStatus(200);
 });
@@ -49,7 +57,16 @@ app.post("/init", async (req, res) => {
 // リセット
 app.post("/reset", async (req, res) => {
   const { username, sockId } = req.body;
+  console.log(socketIdString(sockId));
+  CreateDoraEngine(sockId);
   robotBrains[socketIdString(sockId)].reset(username);
+  res.sendStatus(200);
+});
+
+// クローズ
+app.post("/close", async (req, res) => {
+  const { sockId } = req.body;
+  delete robotBrains[socketIdString(sockId)];
   res.sendStatus(200);
 });
 
