@@ -52,6 +52,7 @@
 /if/はじめ/:goto-hasegawa
 /if/はい/:goto-hasegawa
 /if/やめ/:cancel-hasegawa
+/if/止め/:cancel-hasegawa
 /if/[timeout]/:goto-hasegawa
 
 :goto-hasegawa

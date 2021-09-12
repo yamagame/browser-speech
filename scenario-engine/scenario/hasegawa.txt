@@ -96,6 +96,9 @@
 /text-to-speech.random/今年は何年かわかりますか？/今年は何年ですか？/今年は何年でしょう？
 /nlp.logger/質問：{{payload}}
 /speech-to-text
+/if/わかりません/:日時の見当識-NEXT
+/if/わからん/:日時の見当識-NEXT
+/if/知らん/:日時の見当識-NEXT
 /if/[timeout]/:日時の見当識-タイムアウト
 /nlp.logger/回答：{{payload}}
 /nlp.slot/年/数字
@@ -107,6 +110,9 @@
 /text-to-speech.random.browser/今日は何月かわかりますか？/今日は何月ですか？/今日は何月でしょう？
 /nlp.logger/質問：{{payload}}
 /speech-to-text
+/if/わかりません/:日時の見当識-NEXT
+/if/わからん/:日時の見当識-NEXT
+/if/知らん/:日時の見当識-NEXT
 /if/[timeout]/:日時の見当識-タイムアウト
 /nlp.logger/回答：{{payload}}
 /nlp.slot/月/数字
@@ -118,6 +124,9 @@
 /text-to-speech.random.browser/今日は何日かわかりますか？/今日は何日ですか？/今日は何日でしょう？
 /nlp.logger/質問：{{payload}}
 /speech-to-text
+/if/わかりません/:日時の見当識-NEXT
+/if/わからん/:日時の見当識-NEXT
+/if/知らん/:日時の見当識-NEXT
 /if/[timeout]/:日時の見当識-タイムアウト
 /nlp.logger/回答：{{payload}}
 /nlp.slot/日/数字
