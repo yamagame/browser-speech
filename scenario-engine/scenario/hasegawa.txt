@@ -189,15 +189,11 @@
 
 あとの設問でまた聞きますので、よく覚えておいてください。
 
-
 {{hasegawa.w1}}
-
 
 {{hasegawa.w2}}
 
-
 {{hasegawa.w3}}
-
 
 はい、どうぞ。
 :言葉の即時記銘-再問い合わせ
@@ -405,16 +401,16 @@
 
 一つ目はこれです。
 /image/item{{group-no}}-1.png
-/delay/5
+/delay/3
 二つ目はこれです。
 /image/item{{group-no}}-2.png
-/delay/5
+/delay/3
 三つ目はこれです。
 /image/item{{group-no}}-3.png
-/delay/5
+/delay/3
 四つ目はこれです。
 /image/item{{group-no}}-4.png
-/delay/5
+/delay/3
 五つ目はこれです。
 /image/item{{group-no}}-5.png
 /delay/5
