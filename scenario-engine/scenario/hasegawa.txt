@@ -378,28 +378,38 @@
 //2つ正解　2点
 //全問不正解 0点1つ正解　1点
 画面を見てください。
-/image/item6.png
+
+/goto.random/:group1/:group2
+:group1
+/.group-no/1
+/goto/:groupnext
+:group2
+/.group-no/2
+/goto/:groupnext
+
+:groupnext
+/image/item{{group-no}}-6.png
 
 
 これから5つの品物を見せます。それを隠しますので何があったか言って下さい。
 /nlp.logger/質問：{{payload}}
 
 一つ目はこれです。
-/image/item1.png
+/image/item{{group-no}}-1.png
 /delay/5
 二つ目はこれです。
-/image/item2.png
+/image/item{{group-no}}-2.png
 /delay/5
 三つ目はこれです。
-/image/item3.png
+/image/item{{group-no}}-3.png
 /delay/5
 四つ目はこれです。
-/image/item4.png
+/image/item{{group-no}}-4.png
 /delay/5
 五つ目はこれです。
-/image/item5.png
+/image/item{{group-no}}-5.png
 /delay/5
-/image/item6.png
+/image/item{{group-no}}-6.png
 さて何がありましたか？言って下さい。
 :物品記銘-再認識
 /timeout/15
