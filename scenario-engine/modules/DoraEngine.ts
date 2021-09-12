@@ -69,7 +69,7 @@ export class DoraEngine {
   }
 
   async init(username: string, sockId: string) {
-    const scenarioPath = (filename) =>
+    const scenarioPath = filename =>
       path.join(this.options.scenarioDir, filename);
 
     const {
@@ -167,7 +167,7 @@ export class DoraEngine {
         let count = pids.length;
         if (count > 0) {
           this.playsnd = {};
-          pids.forEach((pid) => {
+          pids.forEach(pid => {
             const playone = _playsnd[pid].playone;
             if (playone) {
               kill(playone.pid, "SIGTERM", function () {
