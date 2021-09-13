@@ -1,2 +1,2 @@
 #!/bin/bash
-npm run debug | tee ../../log-server.log
+node index.js | tee ../../log-server.log
