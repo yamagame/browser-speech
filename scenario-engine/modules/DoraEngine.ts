@@ -317,6 +317,13 @@ export class DoraEngine {
     }
   }
 
+  button(username: string, action: string) {
+    if (this.robots[username] && this.robots[username].next) {
+      this.robots[username].next({ transcript: `[button.${action}]` });
+      delete this.robots[username].next;
+    }
+  }
+
   reset(username: string) {
     if (this.robots[username]) {
       delete this.robots[username].next;

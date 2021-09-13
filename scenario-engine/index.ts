@@ -97,6 +97,21 @@ app.post("/robotReady", async (req, res) => {
   res.sendStatus(200);
 });
 
+// ボタンイベント通知
+app.post("/button/:action", async (req, res) => {
+  const { sockId } = req.body;
+  const { action } = req.params;
+  let { username } = req.body;
+  if (!username && req.body.payload) {
+    const m = req.body.payload.match(/username:(.+)/);
+    if (m) {
+      username = m[1];
+    }
+  }
+  robotBrains[socketIdString(sockId)].button(username, action);
+  res.sendStatus(200);
+});
+
 // 音声認識結果
 app.post("/transcript", async (req, res) => {
   const { transcript, username, sockId } = req.body;

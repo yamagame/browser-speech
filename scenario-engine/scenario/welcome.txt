@@ -10,6 +10,7 @@
 /if/診断/:hasegawa
 /if/おはよう/:hello3
 /if/[timeout]/:end
+/if/[button.pushed]/:button
 /text-to-speech
 /goto/:loop
 
@@ -50,10 +51,16 @@
 /timeout/5
 /speech-to-text
 /if/はじめ/:goto-hasegawa
+/if/お願い/:goto-hasegawa
+/if/よろし/:goto-hasegawa
+/if/どうぞ/:goto-hasegawa
+/if/是非/:goto-hasegawa
+/if/ぜひ/:goto-hasegawa
 /if/はい/:goto-hasegawa
 /if/やめ/:cancel-hasegawa
 /if/止め/:cancel-hasegawa
-/if/[timeout]/:goto-hasegawa
+/if/いえ/:cancel-hasegawa
+/if/[timeout]/:cancel-hasegawa
 
 :goto-hasegawa
 /run/hasegawa.txt
@@ -61,3 +68,6 @@
 :cancel-hasegawa
 ほかにご用件をどうぞ
 /goto/:loop
+
+:button
+/run/hasegawa.txt
