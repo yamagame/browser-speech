@@ -769,20 +769,12 @@ export const Core = function (DORA, config = {}) {
           if (!node.recording) return;
           if (!node.isAlive()) return;
           node.recording = false;
-          if (res == "[timeout]") {
-            msg.payload = "timeout";
-            node.send(msg);
-          } else if (res == "[canceled]") {
-            msg.payload = "canceled";
-            node.send(msg);
-          } else {
-            (msg.languageCode = res.languageCode),
-              (msg.confidence = res.confidence);
-            msg.payload = res.transcript;
-            msg.speechText = msg.payload;
-            delete msg.speechRequest;
-            node.next(msg);
-          }
+          (msg.languageCode = res.languageCode),
+            (msg.confidence = res.confidence);
+          msg.payload = res.transcript;
+          msg.speechText = msg.payload;
+          delete msg.speechRequest;
+          node.next(msg);
         }
       );
     });
@@ -814,7 +806,7 @@ export const Core = function (DORA, config = {}) {
         {
           msg,
           params: {
-            action: "play",
+            action: "wait",
             ...params,
             ...this.credential(),
           },
@@ -824,20 +816,12 @@ export const Core = function (DORA, config = {}) {
           if (!node.recording) return;
           if (!node.isAlive()) return;
           node.recording = false;
-          if (res == "[timeout]") {
-            msg.payload = "timeout";
-            node.send(msg);
-          } else if (res == "[canceled]") {
-            msg.payload = "canceled";
-            node.send(msg);
-          } else {
-            (msg.languageCode = res.languageCode),
-              (msg.confidence = res.confidence);
-            msg.payload = res.transcript;
-            msg.speechText = msg.payload;
-            delete msg.speechRequest;
-            node.next(msg);
-          }
+          (msg.languageCode = res.languageCode),
+            (msg.confidence = res.confidence);
+          msg.payload = res.transcript;
+          msg.speechText = msg.payload;
+          delete msg.speechRequest;
+          node.next(msg);
         }
       );
     });
