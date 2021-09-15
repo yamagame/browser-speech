@@ -50,7 +50,9 @@ app.post("/init", async (req, res) => {
   console.log(Object.keys(robotBrains));
   console.log(socketIdString(sockId));
   CreateDoraEngine(sockId);
-  robotBrains[socketIdString(sockId)].init(username, sockId);
+  if (robotBrains[socketIdString(sockId)]) {
+    robotBrains[socketIdString(sockId)].init(username, sockId);
+  }
   res.sendStatus(200);
 });
 
@@ -59,7 +61,9 @@ app.post("/reset", async (req, res) => {
   const { username, sockId } = req.body;
   console.log(socketIdString(sockId));
   CreateDoraEngine(sockId);
-  robotBrains[socketIdString(sockId)].reset(username);
+  if (robotBrains[socketIdString(sockId)]) {
+    robotBrains[socketIdString(sockId)].reset(username);
+  }
   res.sendStatus(200);
 });
 
@@ -93,7 +97,9 @@ app.post("/robotReady", async (req, res) => {
       username = m[1];
     }
   }
-  robotBrains[socketIdString(sockId)].ready(username);
+  if (robotBrains[socketIdString(sockId)]) {
+    robotBrains[socketIdString(sockId)].ready(username);
+  }
   res.sendStatus(200);
 });
 
@@ -108,14 +114,18 @@ app.post("/button/:action", async (req, res) => {
       username = m[1];
     }
   }
-  robotBrains[socketIdString(sockId)].button(username, action);
+  if (robotBrains[socketIdString(sockId)]) {
+    robotBrains[socketIdString(sockId)].button(username, action);
+  }
   res.sendStatus(200);
 });
 
 // 音声認識結果
 app.post("/transcript", async (req, res) => {
   const { transcript, username, sockId } = req.body;
-  robotBrains[socketIdString(sockId)].think(username, transcript);
+  if (robotBrains[socketIdString(sockId)]) {
+    robotBrains[socketIdString(sockId)].think(username, transcript);
+  }
   res.sendStatus(200);
 });
 
