@@ -16,3 +16,8 @@ body {
   align-items: center;
   justify-content: center;
 }
+
+.resultText {
+  height: 1em;
+  color: gray;
+}
