@@ -1,5 +1,6 @@
 /now
 /nlp.logger/{{timestamp}}
+/clear.subtitle
 /image/title.png
 /nlp.startQuestion
 それでは、長谷川式認知症診断を始めます。
@@ -485,4 +486,5 @@
 /nlp.logger
 /nlp.endQuestion
 
+/clear.subtitle
 /run/welcome.txt

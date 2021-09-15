@@ -1,4 +1,5 @@
 :loop
+/clear.subtitle
 /image/title.png
 /nlp.logger/質問：{{payload}}
 /timeout/30
