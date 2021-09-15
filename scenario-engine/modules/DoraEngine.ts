@@ -48,6 +48,7 @@ export type DoraEngineProps = {
 type Robot = {
   dora: Dora;
   socket: EventEmitter;
+  sockId: string;
   next: (res: any) => void;
 };
 
@@ -155,6 +156,15 @@ export class DoraEngine {
         callback();
       }
     });
+    socket.addListener("clear-subtitle", async (payload, callback) => {
+      if (backendHost) {
+        await axios.post(`${backendHost}/clear-subtitle`, {
+          username,
+          sockId,
+        });
+      }
+      callback();
+    });
     socket.addListener("sound", async (payload, callback) => {
       const { sound, action } = payload.params as {
         sound: string;
@@ -199,7 +209,7 @@ export class DoraEngine {
     });
 
     const dora = new Dora();
-    this.robots[username] = { dora, socket, next: () => {} };
+    this.robots[username] = { dora, socket, sockId, next: () => {} };
     const startScenario = "start.txt";
     const defaults = {};
 
@@ -319,6 +329,15 @@ export class DoraEngine {
 
   button(username: string, action: string) {
     if (this.robots[username] && this.robots[username].next) {
+      const { socket, sockId } = this.robots[username];
+      if (socket) {
+        socket.emit("speech-to-text", {
+          params: {
+            action: "stop",
+            sockId,
+          },
+        });
+      }
       this.robots[username].next({ transcript: `[button.${action}]` });
       delete this.robots[username].next;
     }

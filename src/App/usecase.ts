@@ -23,6 +23,14 @@ export type StartPresentationProps = typeof initialStartPresentation;
 
 declare const webkitSpeechRecognition: typeof SpeechRecognition;
 
+let timeoutTimer: NodeJS.Timeout | null;
+let recordingTranscript: boolean = false;
+
+const clearTimeoutTimer = () => {
+  if (timeoutTimer) clearTimeout(timeoutTimer);
+  timeoutTimer = null;
+};
+
 export const speechRecognition = (() => {
   if ("webkitSpeechRecognition" in window) {
     return new webkitSpeechRecognition();
@@ -101,6 +109,9 @@ export const processControl = ({
         setSockId(data.sockId);
         await axios.post("/reset", { sockId: data.sockId });
         break;
+      case "clear-subtitle":
+        setResult("");
+        break;
       case "text-to-speech/start":
         setResult(data.utterance);
         await speechSynthesis(data.utterance);
@@ -114,11 +125,16 @@ export const processControl = ({
         }
         break;
       case "speech-to-text/start":
+        recordingTranscript = true;
         setStartRecognition({ state: true, timeout: data.timeout });
         setStartPresentation({ state: true });
-        setResult("");
         break;
       case "speech-to-text/stop":
+        recordingTranscript = false;
+        if (speechRecognition) {
+          speechRecognition.abort();
+        }
+        clearTimeoutTimer();
         setStartRecognition({ state: false });
         setStartPresentation({ state: true });
         setResult("");
@@ -160,41 +176,45 @@ export const processRecognition = async ({
   setStartRecognition: (value: StartRecoginitionProps) => void;
 }) => {
   if (speechRecognition !== undefined) {
-    if (startRecognition.state) {
+    if (startRecognition.state && recordingTranscript) {
       const { timeout } = startRecognition;
-      let recordingTranscript = true;
-      let doneTranscript = false;
-      const timeoutTimer =
-        timeout &&
-        setTimeout(() => {
-          if (!doneTranscript) {
+
+      if (timeout) {
+        timeoutTimer = setTimeout(async () => {
+          if (recordingTranscript) {
+            clearTimeoutTimer();
+            recordingTranscript = false;
             speechRecognition.stop();
+            // 音声認識終了通知
+            await axios.post("/transcript", {
+              transcript: "[timeout]",
+            });
+            setResult("");
           }
-          recordingTranscript = false;
         }, timeout * 1000);
+      } else {
+        clearTimeoutTimer();
+      }
+
       speechRecognition.onresult = async (e: SpeechRecognitionEvent) => {
+        clearTimeoutTimer();
         recordingTranscript = false;
-        doneTranscript = true;
         setResult(e.results[0][0].transcript);
         // 認識結果を送信
         await axios.post("/transcript", {
           transcript: e.results[0][0].transcript,
         });
       };
+
       speechRecognition.onend = async () => {
         if (recordingTranscript) {
           speechRecognition.start();
           return;
         }
-        if (timeoutTimer) clearTimeout(timeoutTimer);
+        clearTimeoutTimer();
         setStartRecognition({ state: false });
-        // 音声認識終了通知
-        if (!doneTranscript) {
-          await axios.post("/transcript", {
-            transcript: "[timeout]",
-          });
-        }
       };
+
       try {
         speechRecognition.start();
       } catch (err) {
@@ -202,6 +222,7 @@ export const processRecognition = async ({
       }
     } else {
       speechRecognition.stop();
+      clearTimeoutTimer();
     }
   }
 };
