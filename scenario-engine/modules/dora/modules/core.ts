@@ -855,6 +855,28 @@ export const Core = function (DORA, config = {}) {
   DORA.registerType("speech.stop", SpeechStop);
 
   /*
+   *  サブタイトルの消去
+   *
+   */
+  function ClearSubtitle(node: Node, options) {
+    node.on("input", function (msg) {
+      const { socket } = node.flow.options;
+      socket.emit(
+        "clear-subtitle",
+        {
+          msg,
+          node,
+        },
+        res => {
+          if (!node.isAlive()) return;
+          node.next(msg);
+        }
+      );
+    });
+  }
+  DORA.registerType("clear.subtitle", ClearSubtitle);
+
+  /*
    *
    *
    */

@@ -146,6 +146,18 @@ app.post("/text-to-speech/stop", (req, res) => {
 });
 
 // scenario-engine -> browser
+app.post("/clear-subtitle", (req, res) => {
+  const { username, sockId } = req.body;
+  broadcast({
+    ...req.body,
+    action: "clear-subtitle",
+    username,
+    sockId,
+  });
+  res.sendStatus(200);
+});
+
+// scenario-engine -> browser
 app.post("/start", (req, res) => {
   const { username, sockId } = req.body;
   broadcast({ ...req.body, action: "start", username, sockId });
