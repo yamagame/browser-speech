@@ -37,6 +37,10 @@ interface ControlMessageLogin {
   sockId: string;
 }
 
+interface ControlMessageClearSubtitle {
+  action: "clear-subtitle";
+}
+
 export type ControlMessage =
   | ControlMessageTextToSpeechStart
   | ControlMessageTextToSpeechStop
@@ -45,4 +49,5 @@ export type ControlMessage =
   | ControlMessageImage
   | ControlMessageStart
   | ControlMessageExit
-  | ControlMessageLogin;
+  | ControlMessageLogin
+  | ControlMessageClearSubtitle;

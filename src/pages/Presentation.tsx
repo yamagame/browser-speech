@@ -68,7 +68,7 @@ export const Presentation: React.FC<PresentationProps> = ({
       ) : (
         <>
           {image ? <img alt="" src={image} /> : null}
-          {result ? <div>{result}</div> : null}
+          <div className="resultText">{result ? result : ""}</div>
         </>
       )}
     </>
