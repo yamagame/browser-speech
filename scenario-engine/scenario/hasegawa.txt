@@ -84,6 +84,10 @@
 /timeout/10
 :日時の見当識-開始
 /speech-to-text
+/if/わかりません/:日時の見当識-NEXT
+/if/分かりません/:日時の見当識-NEXT
+/if/わからん/:日時の見当識-NEXT
+/if/知らん/:日時の見当識-NEXT
 /if/[timeout]/:日時の見当識-タイムアウト
 /nlp.logger/回答：{{payload}}
 :日時の見当識-確認
@@ -98,6 +102,7 @@
 /nlp.logger/質問：{{payload}}
 /speech-to-text
 /if/わかりません/:日時の見当識-NEXT
+/if/分かりません/:日時の見当識-NEXT
 /if/わからん/:日時の見当識-NEXT
 /if/知らん/:日時の見当識-NEXT
 /if/[timeout]/:日時の見当識-タイムアウト
@@ -112,6 +117,7 @@
 /nlp.logger/質問：{{payload}}
 /speech-to-text
 /if/わかりません/:日時の見当識-NEXT
+/if/分かりません/:日時の見当識-NEXT
 /if/わからん/:日時の見当識-NEXT
 /if/知らん/:日時の見当識-NEXT
 /if/[timeout]/:日時の見当識-タイムアウト
@@ -126,6 +132,7 @@
 /nlp.logger/質問：{{payload}}
 /speech-to-text
 /if/わかりません/:日時の見当識-NEXT
+/if/分かりません/:日時の見当識-NEXT
 /if/わからん/:日時の見当識-NEXT
 /if/知らん/:日時の見当識-NEXT
 /if/[timeout]/:日時の見当識-タイムアウト
@@ -207,9 +214,9 @@
 /nlp.slot/{{hasegawa.w3}}
 /nlp.check/言葉の即時記銘/:言葉の即時記銘-NEXT
 /loop/.loop.言葉の即時記銘-繰り返し/:言葉の即時記銘-再問い合わせ
-/nlp.save/言葉の即時記銘
 
 :言葉の即時記銘-NEXT
+/nlp.save/言葉の即時記銘
 
 // ===================================================================
 :計算
@@ -287,6 +294,7 @@
 /goto/:数字の逆唱-END
 
 :数字の逆唱2
+/nlp.save/数字の逆唱1
 これから言う数字も逆から言ってみてください。
 /.loop.数字の逆唱-繰り返し/3
 /nlp.clear.order
@@ -304,14 +312,15 @@
 :数字の逆唱2-再問い合わせ
 /timeout/10
 /speech-to-text
-/if/[timeout]/:数字の逆唱-END
+/if/[timeout]/:数字の逆唱-END2
 /nlp.logger/回答：{{payload}}
 /nlp.slot/{{hasegawa.n4}}
 /nlp.slot/{{hasegawa.n3}}
 /nlp.slot/{{hasegawa.n2}}
 /nlp.slot/{{hasegawa.n1}}
-/nlp.check.order/数字の逆唱2/:数字の逆唱-END
+/nlp.check.order/数字の逆唱2/:数字の逆唱-END2
 /loop/.loop.数字の逆唱-繰り返し/:数字の逆唱2-再問い合わせ
+:数字の逆唱-END2
 /nlp.save/数字の逆唱2
 
 :数字の逆唱-END
@@ -443,7 +452,7 @@
 :物品記銘-NEXT
 /nlp.save/物品記銘
 /image/title.png
-それでは、次の質問です。
+それでは、最後の質問です。
 
 // ===================================================================
 :言語の流暢性
