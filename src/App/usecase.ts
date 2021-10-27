@@ -197,13 +197,16 @@ export const processRecognition = async ({
       }
 
       speechRecognition.onresult = async (e: SpeechRecognitionEvent) => {
+        const flag = recordingTranscript;
         clearTimeoutTimer();
         recordingTranscript = false;
-        setResult(e.results[0][0].transcript);
-        // 認識結果を送信
-        await axios.post("/transcript", {
-          transcript: e.results[0][0].transcript,
-        });
+        if (flag) {
+          setResult(e.results[0][0].transcript);
+          // 認識結果を送信
+          await axios.post("/transcript", {
+            transcript: e.results[0][0].transcript,
+          });
+        }
       };
 
       speechRecognition.onend = async () => {
