@@ -710,6 +710,7 @@ export const building = [
   "家",
   "お店",
   "研究室",
+  "調布",
 ].sort((a, b) => {
   return b.length - a.length;
 });
