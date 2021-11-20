@@ -152,6 +152,12 @@ export const processControl = ({
         setStartRecognition({ state: false });
         setResult("");
         break;
+      case "error":
+        setStartPresentation({ state: false });
+        setStartRecognition({ state: false });
+        setResult("");
+        console.error(data.error);
+        break;
     }
   };
   sock.onopen = function () {

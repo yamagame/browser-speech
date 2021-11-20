@@ -219,19 +219,26 @@ export class DoraEngine {
     await axios.post(`${backendHost}/start`, res);
 
     const play = async ({ startScenario, range, username }, defaults) => {
-      function emitError(err) {
+      async function emitError(err) {
         err.info = dora.errorInfo();
         if (!err.info.reason) {
           err.info.reason = err.toString();
         }
+        await axios.post(`${backendHost}/error`, {
+          error: {
+            ...err.info,
+          },
+          username,
+          sockId,
+        });
         run_scenario = false;
       }
       try {
         const scenario = fs.readFileSync(scenarioPath(startScenario), "utf8");
         await dora.parse(scenario, startScenario, (filename, callback) => {
-          fs.readFile(scenarioPath(filename), (err, data) => {
+          fs.readFile(scenarioPath(filename), async (err, data) => {
             if (err) {
-              emitError(err);
+              await emitError(err);
               return;
             }
             callback(data.toString());
@@ -257,7 +264,7 @@ export class DoraEngine {
           },
           async (err, msg) => {
             if (err) {
-              emitError(err);
+              await emitError(err);
               if (err.info) {
                 if (err.info.lineNumber >= 1) {
                   console.log(

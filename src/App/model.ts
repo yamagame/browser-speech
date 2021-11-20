@@ -41,6 +41,15 @@ interface ControlMessageClearSubtitle {
   action: "clear-subtitle";
 }
 
+interface ControlMessageError {
+  action: "error";
+  error: {
+    lineNumber: number;
+    code: string;
+    reason: string;
+  };
+}
+
 export type ControlMessage =
   | ControlMessageTextToSpeechStart
   | ControlMessageTextToSpeechStop
@@ -50,4 +59,5 @@ export type ControlMessage =
   | ControlMessageStart
   | ControlMessageExit
   | ControlMessageLogin
-  | ControlMessageClearSubtitle;
+  | ControlMessageClearSubtitle
+  | ControlMessageError;
