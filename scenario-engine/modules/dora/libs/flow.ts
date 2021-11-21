@@ -29,23 +29,17 @@ export class Flow {
 
   exec() {
     const t = [];
-    const m = [];
     for (var i = 0; i < this.execNodes.length; i++) {
-      t.push(this.execNodes[i]);
-      m.push(utils.clone(this.execNodes[i].msg));
+      t.push([this.execNodes[i], utils.clone(this.execNodes[i].msg)]);
     }
     this.execNodes = [];
-    setTimeout(() => {
-      for (var i = 0; i < t.length; i++) {
-        if (t[i].node.isAlive()) {
-          // const name = t[i].node.name;
-          // if (name !== 'text-to-speech' && name !== 'delay') {
-          //   delete m[i].silence;
-          // }
-          t[i].node.emit("input", m[i], m[i].callstack);
+    setImmediate(() => {
+      t.forEach(([v, m]) => {
+        if (v.node.isAlive()) {
+          v.node.emit("input", m, m.callstack);
         }
-      }
-    }, 1);
+      });
+    });
   }
 
   stop(err) {
@@ -85,7 +79,7 @@ export class Flow {
   }
 
   join(node) {
-    this.engine.join(this, node);
+    return this.engine.join(this, node);
   }
 
   isRunning() {

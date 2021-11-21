@@ -1,6 +1,6 @@
 const clone = require("clone");
 
-const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
+const timeout = ms => new Promise(res => setTimeout(res, ms));
 
 const generateId = () => (1 + Math.random() * 4294967295).toString(16);
 
@@ -30,11 +30,11 @@ const nGramCheck = function (str1, str2) {
     const s1 = str1
       .trim()
       .split(" ")
-      .filter((v) => v != "");
+      .filter(v => v != "");
     const s2 = str2
       .trim()
       .split(" ")
-      .filter((v) => v != "");
+      .filter(v => v != "");
     if (s1 === s2) return 9999;
     let n1 = 0;
     let n2 = 0;
@@ -80,7 +80,7 @@ const nGramCheck = function (str1, str2) {
   return 0;
 };
 
-const _clone = (obj) => {
+const _clone = obj => {
   if (typeof obj === "undefined") return null;
   const callstack = obj.callstack;
   delete obj.callstack;
@@ -100,13 +100,21 @@ function getParam(param, key, def) {
 }
 
 function logMessage(node, socket, message) {
-  socket.emit("dora-event", {
-    action: "log",
+  socket.emit("log", {
     message,
     lineNumber: node.index + 1,
     filename: node.flow.filename,
     ...node.credential(),
   });
+}
+
+function match(msg, message) {
+  return (
+    msg.payload
+      .toString()
+      .toLowerCase()
+      .indexOf(message.trim().toLowerCase()) >= 0
+  );
 }
 
 export {
@@ -120,6 +128,7 @@ export {
   _clone as clone,
   getParam,
   logMessage,
+  match,
 };
 
 if (require.main === module) {
@@ -128,8 +137,8 @@ if (require.main === module) {
   const b = "今日の天気は";
   mecab.parse(a, (err, result1) => {
     mecab.parse(b, (err, result2) => {
-      const s1 = result1.map((v) => v[0]).join(" ");
-      const s2 = result2.map((v) => v[0]).join(" ");
+      const s1 = result1.map(v => v[0]).join(" ");
+      const s2 = result2.map(v => v[0]).join(" ");
       console.log(nGramCheck(s1, s2));
     });
   });

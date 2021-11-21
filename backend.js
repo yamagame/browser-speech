@@ -178,6 +178,13 @@ app.post("/error", async (req, res) => {
   res.sendStatus(200);
 });
 
+// scenario-engine -> browser
+app.post("/log", async (req, res) => {
+  const { username, sockId } = req.body;
+  broadcast({ ...req.body, action: "log", username, sockId });
+  res.sendStatus(200);
+});
+
 // browser -> scenario-engine
 app.post("/transcript", isLogined, (req, res) => {
   const { username, sockId } = req.session;

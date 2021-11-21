@@ -207,6 +207,13 @@ export class DoraEngine {
         if (callback) callback();
       }
     });
+    socket.addListener("log", async payload => {
+      await axios.post(`${backendHost}/log`, {
+        payload,
+        username,
+        sockId,
+      });
+    });
 
     const dora = new Dora();
     this.robots[username] = { dora, socket, sockId, next: () => {} };

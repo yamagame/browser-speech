@@ -50,6 +50,15 @@ interface ControlMessageError {
   };
 }
 
+interface ControlMessageLog {
+  action: "log";
+  payload: {
+    message: string;
+    code: string;
+    reason: string;
+  };
+}
+
 export type ControlMessage =
   | ControlMessageTextToSpeechStart
   | ControlMessageTextToSpeechStop
@@ -60,4 +69,5 @@ export type ControlMessage =
   | ControlMessageExit
   | ControlMessageLogin
   | ControlMessageClearSubtitle
-  | ControlMessageError;
+  | ControlMessageError
+  | ControlMessageLog;

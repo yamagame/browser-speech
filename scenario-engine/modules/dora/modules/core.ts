@@ -17,7 +17,20 @@ function Add(node, msg, options, isTemplated, sign) {
   }
 }
 
-export const EmitTextToSpeech = (node: Node, msg, message) => {
+export const resetRandomTable = (node: Node, length: number) => {
+  if (node._counter === 0) {
+    node._randtable = new Array(length).fill(0).map((_, i) => i);
+    for (var i = 0; i < length * 3; i++) {
+      const a = utils.randInteger(0, length);
+      const b = utils.randInteger(0, length);
+      const c = node._randtable[a];
+      node._randtable[a] = node._randtable[b];
+      node._randtable[b] = c;
+    }
+  }
+};
+
+export const textToSpeech = (node: Node, msg, message, callback = null) => {
   const { socket } = node.flow.options;
   delete msg.slot;
   delete msg.match;
@@ -77,10 +90,18 @@ export const EmitTextToSpeech = (node: Node, msg, message) => {
       msg.payload += "\n";
     }
     msg.payload += message;
-    node.send(msg);
+    if (callback) {
+      callback(msg);
+    } else {
+      node.send(msg);
+    }
   } else if (message === "") {
     msg.payload = message;
-    node.send(msg);
+    if (callback) {
+      callback(msg);
+    } else {
+      node.send(msg);
+    }
   } else {
     socket.emit(
       "text-to-speech",
@@ -97,7 +118,11 @@ export const EmitTextToSpeech = (node: Node, msg, message) => {
       res => {
         if (!node.isAlive()) return;
         msg.payload = message;
-        node.send(msg);
+        if (callback) {
+          callback(msg);
+        } else {
+          node.send(msg);
+        }
       }
     );
   }
@@ -134,15 +159,14 @@ export const Core = function (DORA, config = {}) {
     node.on("input", async function (msg) {
       const { socket } = node.flow.options;
       let logstr = "";
-      logstr += "";
       try {
-        var message = options || JSON.stringify(msg, null, "  ");
+        let message = options || msg;
         if (isTemplated) {
           message = utils.mustache.render(message, msg);
         }
-        logstr += message;
+        logstr = message;
       } catch (err) {
-        logstr += options;
+        logstr = options;
       }
       console.log(`log-->\n${logstr}\n<--log`);
       utils.logMessage(node, socket, logstr);
@@ -215,20 +239,31 @@ export const Core = function (DORA, config = {}) {
     const isTemplated = (string || "").indexOf("{{") != -1;
     if (params.length > 1) {
       node.nextLabel(params.slice(1).join("/"));
+    } else {
+      throw new Error("ラベルを指定してください。");
     }
+    node._counter = 0;
     node.on("input", function (msg) {
       let message = string;
       if (isTemplated) {
         message = utils.mustache.render(message, msg);
       }
-      if (
-        typeof msg.payload !== "undefined" &&
-        msg.payload
-          .toString()
-          .toLowerCase()
-          .indexOf(message.trim().toLowerCase()) >= 0
-      ) {
-        node.jump(msg);
+      if (typeof msg.payload !== "undefined" && utils.match(msg, message)) {
+        const words =
+          params.length > 1 && params.slice(1).filter(v => v[0] !== ":");
+        if (words) {
+          resetRandomTable(node, words.length);
+          const message = words[node._randtable[node._counter]];
+          node._counter++;
+          if (node._counter >= params.length) {
+            node._counter = 0;
+          }
+          textToSpeech(node, msg, message, msg => {
+            node.jump(msg);
+          });
+        } else {
+          node.jump(msg);
+        }
       } else {
         node.next(msg);
       }
@@ -287,27 +322,14 @@ export const Core = function (DORA, config = {}) {
       throw new Error("ラベルを指定してください。");
     node._counter = 0;
     node.on("input", function (msg) {
-      if (node._counter === 0) {
-        node._randtable = node.wires
-          .slice(0, node.wires.length - 1)
-          .map((_, i) => {
-            return i;
-          });
-        for (var i = 0; i < node.wires.length * 3; i++) {
-          const a = utils.randInteger(0, node.wires.length - 1);
-          const b = utils.randInteger(0, node.wires.length - 1);
-          const c = node._randtable[a];
-          node._randtable[a] = node._randtable[b];
-          node._randtable[b] = c;
-        }
-      }
-      const n = node._randtable[node._counter];
+      const length = node.wires.length - 1;
+      resetRandomTable(node, length);
       const t = node.wires.map(v => {
         return null;
       });
-      t[n] = msg;
+      t[node._randtable[node._counter]] = msg;
       node._counter++;
-      if (node._counter >= node.wires.length - 1) {
+      if (node._counter >= length) {
         node._counter = 0;
       }
       node.send(t);
@@ -424,6 +446,7 @@ export const Core = function (DORA, config = {}) {
     if (p.length < 2) {
       throw new Error("パラメータがありません。");
     }
+    const value = p.slice(1).join("/");
     node.on("input", async function (msg) {
       let t = msg;
       let key = null;
@@ -451,7 +474,7 @@ export const Core = function (DORA, config = {}) {
           }
           return v;
         };
-        v[key] = val(p.slice(1).join("/"));
+        v[key] = val(value);
       }
       if (msg.labels) {
         Object.keys(msg.labels).forEach(key => {
@@ -653,7 +676,7 @@ export const Core = function (DORA, config = {}) {
           if (isTemplated) {
             message = utils.mustache.render(message, msg);
           }
-          EmitTextToSpeech(node, msg, message);
+          textToSpeech(node, msg, message);
         } else {
           node.next(msg);
         }
@@ -683,22 +706,13 @@ export const Core = function (DORA, config = {}) {
             message = utils.mustache.render(message, msg);
           }
           const params = message.split("/");
-          if (node._counter === 0) {
-            node._randtable = new Array(params.length).fill(0).map((_, i) => i);
-            for (var i = 0; i < params.length * 3; i++) {
-              const a = utils.randInteger(0, params.length);
-              const b = utils.randInteger(0, params.length);
-              const c = node._randtable[a];
-              node._randtable[a] = node._randtable[b];
-              node._randtable[b] = c;
-            }
-          }
+          resetRandomTable(node, params.length);
           message = params[node._randtable[node._counter]];
           node._counter++;
           if (node._counter >= params.length) {
             node._counter = 0;
           }
-          EmitTextToSpeech(node, msg, message);
+          textToSpeech(node, msg, message);
         } else {
           node.next(msg);
         }
@@ -888,23 +902,10 @@ export const Core = function (DORA, config = {}) {
       if (isTemplated) {
         option = utils.mustache.render(option, msg);
       }
-      socket.emit(
-        "text-to-speech",
-        {
-          msg,
-          params: {
-            action: "stop",
-            ...this.credential(),
-            option,
-          },
-          node,
-        },
-        res => {
-          if (!node.isAlive()) return;
-          node.join();
-          node.next(msg);
-        }
-      );
+      if (!node.isAlive()) return;
+      if (node.join()) {
+        node.next(msg);
+      }
     });
   }
   DORA.registerType("join", Join);
@@ -1020,7 +1021,6 @@ export const Core = function (DORA, config = {}) {
         nextscript = utils.mustache.render(nextscript, msg);
       }
       nextscript = nextscript.trim();
-      //console.log(`nextscript ${nextscript}`);
       if (nextscript.indexOf("http") == 0) {
         const res = await node.flow.request({
           type: "scenario",
@@ -1028,7 +1028,6 @@ export const Core = function (DORA, config = {}) {
           uri: nextscript,
           username: msg.username,
         });
-        //console.log(`res ${JSON.stringify(res)}`);
         msg._nextscript = res.next_script;
       } else {
         msg._nextscript = nextscript;

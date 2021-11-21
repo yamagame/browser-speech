@@ -158,6 +158,12 @@ export const processControl = ({
         setResult("");
         console.error(data.error);
         break;
+      case "log":
+        setStartPresentation({ state: false });
+        setStartRecognition({ state: false });
+        setResult("");
+        console.log(data.payload);
+        break;
     }
   };
   sock.onopen = function () {

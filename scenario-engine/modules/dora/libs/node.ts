@@ -56,10 +56,14 @@ export class Node extends Emitter {
 
   jump(msg) {
     const w = [];
-    for (var i = 0; i < this.wires.length - 1; i++) {
+    if (this.wires.length - 1 > 0) {
+      for (var i = 0; i < this.wires.length - 1; i++) {
+        w.push(msg);
+      }
+      w.push(null);
+    } else {
       w.push(msg);
     }
-    w.push(null);
     this.send(w);
   }
 

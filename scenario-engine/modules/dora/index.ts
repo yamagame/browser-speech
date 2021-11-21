@@ -8,7 +8,7 @@ import { Nlp } from "./modules/nlp";
 import * as utils from "./libs/utils";
 const util = require("util");
 
-const removeQuote = (str) => {
+const removeQuote = str => {
   if (!str) return str;
   const t = str.trim().match(/"(.+)"/) || ["", str];
   return t[1];
@@ -65,7 +65,7 @@ export class Dora {
   }
 
   load(filename, loader) {
-    return new Promise((res) => loader(filename, res));
+    return new Promise(res => loader(filename, res));
   }
 
   loadModule(name, mod, config) {
@@ -243,9 +243,9 @@ export class Dora {
     const flow = this.initNode(lines, new Flow(this));
     flow.filename = filename;
     this.flow = flow;
-    Object.keys(this.labelNodes).forEach((key) => {
+    Object.keys(this.labelNodes).forEach(key => {
       const _key = key.slice(1);
-      this.labelNodes[key].forEach((node) => {
+      this.labelNodes[key].forEach(node => {
         if (this.labels[_key]) {
           node.wires.push(this.labels[_key].node);
         } else {
@@ -254,7 +254,7 @@ export class Dora {
         }
       });
     });
-    this.nodes.forEach((node) => {
+    this.nodes.forEach(node => {
       node.wires.push(node.nextNode);
     });
     for (var i = 0; i < this.nodes.length; i++) {
@@ -262,7 +262,7 @@ export class Dora {
       if (node.name == "call") {
         node.dora = async () => {
           const dora = new Dora(this.config);
-          modules.forEach((m) => {
+          modules.forEach(m => {
             dora._modname = m.name;
             m.mod(dora, m.config);
           });
@@ -290,7 +290,7 @@ export class Dora {
     const { script } = msg;
     const { socket } = this.flow.options;
     const dora = new Dora(config);
-    modules.forEach((m) => {
+    modules.forEach(m => {
       dora._modname = m.name;
       m.mod(dora, m.config);
     });
@@ -340,7 +340,7 @@ export class Dora {
         return _callback(this._errorInfo, msg);
       }
       if (
-        !this.nodes.some((v) => {
+        !this.nodes.some(v => {
           if (v.index == start) {
             this.flow.run(v, msg);
             return true;
@@ -421,11 +421,10 @@ export class Dora {
   }
 
   join(flow, node) {
-    for (var i in this.nodes) {
-      this.nodes[i].stop();
-    }
+    this.nodes.forEach(node => node.stop());
     node.up();
     flow.runnode = 1;
+    return true;
   }
 
   goto(flow, node, msg, labels) {
