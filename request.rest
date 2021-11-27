@@ -18,3 +18,12 @@ POST http://localhost:4100/speech-to-text/start
 
 ###
 POST http://localhost:4100/speech-to-text/stop
+
+###
+POST http://localhost:5200/button/pushed
+content-type:application/json
+
+{
+  "sockId": "",
+  "username": ""
+}

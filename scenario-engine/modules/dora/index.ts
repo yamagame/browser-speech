@@ -420,7 +420,13 @@ export class Dora {
     flow.exec();
   }
 
-  join(flow, node) {
+  join(flow, node, type) {
+    if (type !== "force") {
+      if (flow.runnode > 1) {
+        flow.runnode--;
+        return false;
+      }
+    }
     this.nodes.forEach(node => node.stop());
     node.up();
     flow.runnode = 1;

@@ -1,3 +1,4 @@
+//run/cancel-test.txt
 /gosub/:INIT-ROBOT
 //run/vegetable.txt
 //run/hasegawa.txt

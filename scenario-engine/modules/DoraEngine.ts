@@ -3,10 +3,15 @@ const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
 const ip = require("ip");
+const uuidv4 = require("uuid/v4");
 import { EventEmitter } from "events";
 import { Dora, Node } from "./dora";
 
 const psTree = require("ps-tree");
+
+function getHash() {
+  return uuidv4();
+}
 
 function kill(pid, signal, callback) {
   signal = signal || "SIGKILL";
@@ -49,7 +54,7 @@ type Robot = {
   dora: Dora;
   socket: EventEmitter;
   sockId: string;
-  next: (res: any) => void;
+  next: { callback: (res: any) => void; id: string; key: string }[];
 };
 
 export class DoraEngine {
@@ -84,6 +89,7 @@ export class DoraEngine {
 
     const socket = new EventEmitter();
     socket.addListener("text-to-speech", async (payload, callback) => {
+      const key = getHash();
       const { message, action } = payload.params as {
         message: string;
         action: "play" | "stop";
@@ -94,12 +100,14 @@ export class DoraEngine {
             payload: message,
             username,
             sockId,
+            key,
           });
         } else if (backendHost) {
           await axios.post(`${backendHost}/text-to-speech/start`, {
             utterance: message,
             username,
             sockId,
+            key,
           });
         }
       }
@@ -109,12 +117,19 @@ export class DoraEngine {
             utterance: message,
             username,
             sockId,
+            key,
           });
         }
       }
-      if (this.robots[username]) this.robots[username].next = callback;
+      if (this.robots[username])
+        this.robots[username].next.push({
+          callback,
+          id: "text-to-speech",
+          key,
+        });
     });
     socket.addListener("speech-to-text", async (payload, callback) => {
+      const key = getHash();
       const { timeout, action } = payload.params;
       if (action === "play") {
         if (backendHost) {
@@ -122,6 +137,7 @@ export class DoraEngine {
             username,
             timeout,
             sockId,
+            key,
           });
         }
       }
@@ -131,28 +147,46 @@ export class DoraEngine {
             username,
             timeout,
             sockId,
+            key,
           });
         }
       }
-      if (this.robots[username]) this.robots[username].next = callback;
+      if (this.robots[username])
+        this.robots[username].next.push({
+          callback,
+          id: "speech-to-text",
+          key,
+        });
     });
     socket.addListener("display/image", async (payload, callback) => {
+      const key = getHash();
       const { image } = payload.params;
       if (backendHost) {
         await axios.post(`${backendHost}/display/image`, {
           username,
           image,
           sockId,
+          key,
         });
       }
-      if (this.robots[username]) this.robots[username].next = callback;
+      if (this.robots[username])
+        this.robots[username].next.push({
+          callback,
+          id: "display-image",
+          key,
+        });
     });
     socket.addListener("http-request", async (payload, callback) => {
-      if (this.robots[username]) this.robots[username].next = callback;
+      const key = getHash();
+      if (this.robots[username])
+        this.robots[username].next.push({ callback, id: "http-request", key });
       try {
-        await axios.request(payload.request);
+        const { request } = payload;
+        await axios.request({ ...request, data: { ...request.data, key } });
       } catch {
-        delete this.robots[username].next;
+        this.robots[username].next = this.robots[username].next.filter(
+          v => v.id !== "http-request" && v.key !== key
+        );
         callback();
       }
     });
@@ -216,7 +250,7 @@ export class DoraEngine {
     });
 
     const dora = new Dora();
-    this.robots[username] = { dora, socket, sockId, next: () => {} };
+    this.robots[username] = { dora, socket, sockId, next: [] };
     const startScenario = "start.txt";
     const defaults = {};
 
@@ -327,39 +361,44 @@ export class DoraEngine {
     );
   }
 
-  think(username: string, transcript: string) {
-    if (this.robots[username] && this.robots[username].next) {
-      this.robots[username].next({ transcript });
-      delete this.robots[username].next;
+  think(username: string, key: string, transcript: string) {
+    if (this.robots[username] && this.robots[username].next.length > 0) {
+      this.robots[username].next.forEach(v => v.callback({ transcript }));
+      this.robots[username].next = [];
     }
   }
 
-  ready(username: string) {
-    if (this.robots[username] && this.robots[username].next) {
-      this.robots[username].next({});
-      delete this.robots[username].next;
-    }
-  }
-
-  button(username: string, action: string) {
-    if (this.robots[username] && this.robots[username].next) {
-      const { socket, sockId } = this.robots[username];
-      if (socket) {
-        socket.emit("speech-to-text", {
-          params: {
-            action: "stop",
-            sockId,
-          },
-        });
+  ready(username: string, key: string) {
+    console.log(`${username} ${key}`);
+    if (this.robots[username] && this.robots[username].next.length > 0) {
+      const next = this.robots[username].next;
+      if (key) {
+        next.filter(v => v.key === key).forEach(v => v.callback({}));
+        this.robots[username].next = next.filter(v => v.key !== key);
+      } else {
+        next.forEach(v => v.callback({}));
+        this.robots[username].next = [];
       }
-      this.robots[username].next({ transcript: `[button.${action}]` });
-      delete this.robots[username].next;
     }
   }
 
-  reset(username: string) {
+  button(username: string, key: string, action: string) {
+    if (this.robots[username] && this.robots[username].next.length > 0) {
+      const next = this.robots[username].next;
+      next
+        .filter(v => v.id !== "text-to-speech")
+        .forEach(v =>
+          v.callback({
+            transcript: `[button.${action}]`,
+          })
+        );
+      this.robots[username].next = next.filter(v => v.id === "text-to-speech");
+    }
+  }
+
+  reset(username: string, key: string) {
     if (this.robots[username]) {
-      delete this.robots[username].next;
+      this.robots[username].next = [];
       const { robotServer } = this.options;
       if (robotServer) {
         const stop = async () => {

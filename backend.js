@@ -88,59 +88,65 @@ app.post("/login", (req, res) => {
 
 // scenario-engine -> browser
 app.post("/speech-to-text/start", (req, res) => {
-  const { timeout, username, sockId } = req.body;
+  const { timeout, username, sockId, key } = req.body;
   broadcast({
     action: "speech-to-text/start",
     username,
     timeout,
     sockId,
+    key,
   });
   res.sendStatus(200);
 });
 
 // scenario-engine -> browser
 app.post("/speech-to-text/stop", (req, res) => {
-  const { username, sockId } = req.body;
+  const { username, sockId, key } = req.body;
   broadcast({
     action: "speech-to-text/stop",
     username,
     sockId,
+    key,
   });
   res.sendStatus(200);
 });
 
 // scenario-engine -> browser
 app.post("/display/image", (req, res) => {
-  const { image, username, sockId } = req.body;
+  const { image, username, sockId, key } = req.body;
   broadcast({
     action: "image",
     username,
     image,
     sockId,
+    key,
   });
   res.sendStatus(200);
 });
 
 // scenario-engine -> browser
 app.post("/text-to-speech/start", (req, res) => {
-  const { username, sockId } = req.body;
+  const { username, sockId, key } = req.body;
+  console.log(`${username} ${key}`);
   broadcast({
     ...req.body,
     action: "text-to-speech/start",
     username,
     sockId,
+    key,
   });
   res.sendStatus(200);
 });
 
 // scenario-engine -> browser
 app.post("/text-to-speech/stop", (req, res) => {
-  const { username, sockId } = req.body;
+  const { username, sockId, key } = req.body;
   broadcast({
     ...req.body,
     action: "text-to-speech/stop",
     username,
     sockId,
+    key,
   });
   res.sendStatus(200);
 });
@@ -187,12 +193,14 @@ app.post("/log", async (req, res) => {
 
 // browser -> scenario-engine
 app.post("/transcript", isLogined, (req, res) => {
+  const { key } = req.body;
   const { username, sockId } = req.session;
   if (scenarioManagerHost)
     axios.post(`${scenarioManagerHost}/transcript`, {
       ...req.body,
       username,
       sockId,
+      key,
     });
   res.sendStatus(200);
 });
@@ -232,12 +240,14 @@ app.post("/reset", (req, res) => {
 
 // browser -> scenario-engine
 app.post("/ready", (req, res) => {
+  const { key } = req.body;
   const { username, sockId } = req.session;
   if (scenarioManagerHost)
     axios.post(`${scenarioManagerHost}/ready`, {
       ...req.body,
       username,
       sockId,
+      key,
     });
   res.sendStatus(200);
 });

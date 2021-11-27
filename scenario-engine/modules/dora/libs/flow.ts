@@ -78,8 +78,8 @@ export class Flow {
     return this.engine.goto(this, node, msg, labels);
   }
 
-  join(node) {
-    return this.engine.join(this, node);
+  join(node, type) {
+    return this.engine.join(this, node, type);
   }
 
   isRunning() {

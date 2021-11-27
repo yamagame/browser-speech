@@ -1,10 +1,12 @@
 interface ControlMessageTextToSpeechStart {
   action: "text-to-speech/start";
   utterance: string;
+  key: string;
 }
 
 interface ControlMessageTextToSpeechStop {
   action: "text-to-speech/stop";
+  key: string;
 }
 
 interface ControlMessageSpeechToTextStart {

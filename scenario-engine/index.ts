@@ -58,11 +58,11 @@ app.post("/init", async (req, res) => {
 
 // リセット
 app.post("/reset", async (req, res) => {
-  const { username, sockId } = req.body;
+  const { username, sockId, key } = req.body;
   console.log(socketIdString(sockId));
   CreateDoraEngine(sockId);
   if (robotBrains[socketIdString(sockId)]) {
-    robotBrains[socketIdString(sockId)].reset(username);
+    robotBrains[socketIdString(sockId)].reset(username, key);
   }
   res.sendStatus(200);
 });
@@ -78,19 +78,19 @@ app.post("/close", async (req, res) => {
 
 // シナリオ継続通知
 app.post("/ready", async (req, res) => {
-  const { username, sockId } = req.body;
+  const { username, sockId, key } = req.body;
   if (!username) {
     res.sendStatus(200);
     return;
   }
-  robotBrains[socketIdString(sockId)].ready(username);
+  robotBrains[socketIdString(sockId)].ready(username, key);
   res.sendStatus(200);
 });
 
 // シナリオ継続通知
 app.post("/robotReady", async (req, res) => {
   const { sockId } = req.body;
-  let { username } = req.body;
+  let { username, key } = req.body;
   if (!username && req.body.payload) {
     const m = req.body.payload.match(/username:(.+)/);
     if (m) {
@@ -98,7 +98,7 @@ app.post("/robotReady", async (req, res) => {
     }
   }
   if (robotBrains[socketIdString(sockId)]) {
-    robotBrains[socketIdString(sockId)].ready(username);
+    robotBrains[socketIdString(sockId)].ready(username, key);
   }
   res.sendStatus(200);
 });
@@ -107,7 +107,7 @@ app.post("/robotReady", async (req, res) => {
 app.post("/button/:action", async (req, res) => {
   const { sockId } = req.body;
   const { action } = req.params;
-  let { username } = req.body;
+  let { username, key } = req.body;
   if (!username && req.body.payload) {
     const m = req.body.payload.match(/username:(.+)/);
     if (m) {
@@ -115,16 +115,16 @@ app.post("/button/:action", async (req, res) => {
     }
   }
   if (robotBrains[socketIdString(sockId)]) {
-    robotBrains[socketIdString(sockId)].button(username, action);
+    robotBrains[socketIdString(sockId)].button(username, key, action);
   }
   res.sendStatus(200);
 });
 
 // 音声認識結果
 app.post("/transcript", async (req, res) => {
-  const { transcript, username, sockId } = req.body;
+  const { transcript, username, sockId, key } = req.body;
   if (robotBrains[socketIdString(sockId)]) {
-    robotBrains[socketIdString(sockId)].think(username, transcript);
+    robotBrains[socketIdString(sockId)].think(username, key, transcript);
   }
   res.sendStatus(200);
 });

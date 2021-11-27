@@ -115,14 +115,13 @@ export const processControl = ({
       case "text-to-speech/start":
         setResult(data.utterance);
         await speechSynthesis(data.utterance);
-        await axios.post("/ready");
+        await axios.post("/ready", { key: data.key });
         break;
       case "text-to-speech/stop":
         if (synth.speaking) {
           synth.cancel();
-        } else {
-          await axios.post("/ready");
         }
+        await axios.post("/ready", { key: data.key });
         break;
       case "speech-to-text/start":
         recordingTranscript = true;
@@ -159,9 +158,6 @@ export const processControl = ({
         console.error(data.error);
         break;
       case "log":
-        setStartPresentation({ state: false });
-        setStartRecognition({ state: false });
-        setResult("");
         console.log(data.payload);
         break;
     }

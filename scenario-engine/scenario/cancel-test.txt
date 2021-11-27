@@ -1,0 +1,15 @@
+:LOOP
+/join
+/speech-to-text
+/goto/:トピック1/:トピック2
+
+:トピック1
+/if/こんにちは/はい、こんにちは
+/if/こんばんは/はい、こんばんわ
+毎度ご利用いただきありがとうございます。
+/goto/:LOOP
+
+:トピック2
+/wait-event
+/text-to-speech.stop
+/goto/:LOOP

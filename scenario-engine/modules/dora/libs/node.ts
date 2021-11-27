@@ -100,8 +100,8 @@ export class Node extends Emitter {
     return this.flow.nextLabel(this, label, index);
   }
 
-  join() {
-    return this.flow.join(this);
+  join(type) {
+    return this.flow.join(this, type);
   }
 
   goto(msg, labels) {

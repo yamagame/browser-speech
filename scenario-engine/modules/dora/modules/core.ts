@@ -255,7 +255,7 @@ export const Core = function (DORA, config = {}) {
           resetRandomTable(node, words.length);
           const message = words[node._randtable[node._counter]];
           node._counter++;
-          if (node._counter >= params.length) {
+          if (node._counter >= words.length) {
             node._counter = 0;
           }
           textToSpeech(node, msg, message, msg => {
@@ -866,7 +866,8 @@ export const Core = function (DORA, config = {}) {
       );
     });
   }
-  DORA.registerType("speech.stop", SpeechStop);
+  DORA.registerType("text-to-speech.stop", SpeechStop);
+  DORA.registerType("wait-event.stop", SpeechStop);
 
   /*
    *  サブタイトルの消去
@@ -894,21 +895,23 @@ export const Core = function (DORA, config = {}) {
    *
    *
    */
-  function Join(node: Node, options) {
-    const isTemplated = (options || "").indexOf("{{") != -1;
-    node.on("input", function (msg) {
-      const { socket } = node.flow.options;
-      var option = options;
-      if (isTemplated) {
-        option = utils.mustache.render(option, msg);
-      }
-      if (!node.isAlive()) return;
-      if (node.join()) {
-        node.next(msg);
-      }
-    });
+  function Join() {
+    return (node: Node, options) => {
+      const isTemplated = (options || "").indexOf("{{") != -1;
+      node.on("input", function (msg) {
+        const { socket } = node.flow.options;
+        var option = options;
+        if (isTemplated) {
+          option = utils.mustache.render(option, msg);
+        }
+        if (!node.isAlive()) return;
+        if (node.join("force")) {
+          node.next(msg);
+        }
+      });
+    };
   }
-  DORA.registerType("join", Join);
+  DORA.registerType("join", Join());
 
   /*
    *
