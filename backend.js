@@ -86,6 +86,11 @@ app.post("/login", (req, res) => {
   res.sendStatus(403);
 });
 
+app.post("/logout", (req, res) => {
+  delete req.session.username;
+  res.sendStatus(200);
+});
+
 // scenario-engine -> browser
 app.post("/speech-to-text/start", (req, res) => {
   const { timeout, username, sockId, key } = req.body;
@@ -205,11 +210,6 @@ app.post("/transcript", isLogined, (req, res) => {
   res.sendStatus(200);
 });
 
-app.post("/logout", (req, res) => {
-  delete req.session.username;
-  res.sendStatus(200);
-});
-
 // browser -> scenario-engine
 app.post("/init", (req, res) => {
   const { username } = req.session;
@@ -249,10 +249,6 @@ app.post("/ready", (req, res) => {
       sockId,
       key,
     });
-  res.sendStatus(200);
-});
-
-app.post("/logger", (req, res) => {
   res.sendStatus(200);
 });
 

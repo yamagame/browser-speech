@@ -89,6 +89,13 @@ app.post("/ready", async (req, res) => {
 
 // シナリオ継続通知
 app.post("/robotReady", async (req, res) => {
+  function sleep() {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(0);
+      }, 500);
+    });
+  }
   const { sockId } = req.body;
   let { username, key } = req.body;
   if (!username && req.body.payload) {
@@ -97,6 +104,7 @@ app.post("/robotReady", async (req, res) => {
       username = m[1];
     }
   }
+  await sleep();
   if (robotBrains[socketIdString(sockId)]) {
     robotBrains[socketIdString(sockId)].ready(username, key);
   }

@@ -251,7 +251,7 @@ export const Core = function (DORA, config = {}) {
       if (typeof msg.payload !== "undefined" && utils.match(msg, message)) {
         const words =
           params.length > 1 && params.slice(1).filter(v => v[0] !== ":");
-        if (words) {
+        if (words && words.length > 0) {
           resetRandomTable(node, words.length);
           const message = words[node._randtable[node._counter]];
           node._counter++;
