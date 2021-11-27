@@ -24,8 +24,7 @@ app.use(
   cookieSession({
     name: "session",
     secret:
-      process.env.SECRET ||
-      "JOmroqZSynI3wt6H2VMF6ltX9DRlUEuvupyZeeXXy9M4fTV2EaSfGSmkFXCjHojH",
+      process.env.SECRET || "JOmroqZSynI3wt6H2VMF6ltX9DRlUEuvupyZeeXXy9M4fTV2EaSfGSmkFXCjHojH",
     maxAge: 24 * 60 * 60 * 1000 * 365 * 1000, // 1000 years
   })
 );
@@ -132,7 +131,6 @@ app.post("/display/image", (req, res) => {
 // scenario-engine -> browser
 app.post("/text-to-speech/start", (req, res) => {
   const { username, sockId, key } = req.body;
-  console.log(`${username} ${key}`);
   broadcast({
     ...req.body,
     action: "text-to-speech/start",

@@ -75,17 +75,10 @@ export class DoraEngine {
   }
 
   async init(username: string, sockId: string) {
-    const scenarioPath = filename =>
-      path.join(this.options.scenarioDir, filename);
+    const scenarioPath = filename => path.join(this.options.scenarioDir, filename);
 
-    const {
-      backendHost,
-      scenarioHost,
-      scenarioPort,
-      commandDir,
-      loggerHost,
-      robotServer,
-    } = this.options;
+    const { backendHost, scenarioHost, scenarioPort, commandDir, loggerHost, robotServer } =
+      this.options;
 
     const socket = new EventEmitter();
     socket.addListener("text-to-speech", async (payload, callback) => {
@@ -94,31 +87,32 @@ export class DoraEngine {
         message: string;
         action: "play" | "stop";
       };
-      if (action === "play") {
-        if (robotServer) {
-          await axios.post(`${robotServer}/speech`, {
+      const server = robotServer || backendHost;
+      const call = async () => {
+        if (action === "play") {
+          return await axios.post(`${server}/text-to-speech/start`, {
             payload: message,
             username,
             sockId,
             key,
           });
-        } else if (backendHost) {
-          await axios.post(`${backendHost}/text-to-speech/start`, {
+        }
+        if (action === "stop") {
+          return await axios.post(`${server}/text-to-speech/stop`, {
             utterance: message,
             username,
             sockId,
             key,
           });
         }
-      }
-      if (action === "stop") {
-        if (backendHost) {
-          await axios.post(`${backendHost}/text-to-speech/stop`, {
-            utterance: message,
-            username,
-            sockId,
-            key,
-          });
+      };
+      const res = await call();
+      if (robotServer) {
+        let status = res.data.status;
+        while (status === "NG") {
+          const res = await call();
+          if (!res) break;
+          status = res.data.status;
         }
       }
       if (this.robots[username])
@@ -312,9 +306,7 @@ export class DoraEngine {
                     `${err.info.lineNumber}行目でエラーが発生しました。\n\n${err.info.code}\n\n${err.info.reason}`
                   );
                 } else {
-                  console.log(
-                    `エラーが発生しました。\n\n${err.info.code}\n\n${err.info.reason}`
-                  );
+                  console.log(`エラーが発生しました。\n\n${err.info.code}\n\n${err.info.reason}`);
                 }
               } else {
                 console.log(`エラーが発生しました。\n\n`);

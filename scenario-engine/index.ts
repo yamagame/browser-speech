@@ -4,8 +4,7 @@ const port = process.env.PORT || 5200;
 const backendHost = process.env.BACKEND_HOST || null;
 const robotServer = process.env.ROBOT_SERVER || null;
 const scenarioHost = process.env.SCENARIO_HOST || "http://localhost";
-const scenarioDir =
-  process.env.SCENARIO_DIR || path.join(__dirname, "scenario");
+const scenarioDir = process.env.SCENARIO_DIR || path.join(__dirname, "scenario");
 const commandDir = process.env.COMMAND_DIR || path.join(__dirname, "command");
 const loggerHost = process.env.LOGGER_HOST || null;
 
@@ -89,13 +88,6 @@ app.post("/ready", async (req, res) => {
 
 // シナリオ継続通知
 app.post("/robotReady", async (req, res) => {
-  function sleep() {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(0);
-      }, 500);
-    });
-  }
   const { sockId } = req.body;
   let { username, key } = req.body;
   if (!username && req.body.payload) {
@@ -104,7 +96,6 @@ app.post("/robotReady", async (req, res) => {
       username = m[1];
     }
   }
-  await sleep();
   if (robotBrains[socketIdString(sockId)]) {
     robotBrains[socketIdString(sockId)].ready(username, key);
   }
